@@ -1,0 +1,51 @@
+* {
+    box-sizing: border-box;
+    padding: 0px;
+    margin: 0px;
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+}
+
+/* NAV */
+.nav-link {
+    margin-right: 40px;
+    /*margin-bottom: 10px;*/
+
+}
+.navbar-toggler-icon {
+    color: white;
+}
+
+#botonFiltro,
+#a_inscribirme {
+    color: white;
+    background: linear-gradient(rgb(84, 190, 3), rgb(5, 121, 5), rgb(1, 81, 27));
+}
+
+/* EVENTOS */
+#eventos h1, 
+#inscripcionNiños h1{
+    text-align: center;
+    margin-bottom: 80px;
+    margin-top: 50px;
+}
+
+.card-img-top{
+    padding: 5%;
+    height: 200px;
+}
+.buttom{
+    color: white;
+    background: linear-gradient(rgb(84, 190, 3), rgb(5, 121, 5), rgb(1, 81, 27));
+}
+
+#carousel{
+    width: 70%; 
+    margin-bottom:20px
+}
+#imagenCarousel{
+    height: 500px;
+}
+

@@ -184,7 +184,7 @@
 
         ?>
         
-        <div class="container w-75 ">
+        <div class="container w-85 ">
 
             <div class=" col-md-12 text-center" style=" margin-top: 20px;">
                 <h2> Publicar </h2>

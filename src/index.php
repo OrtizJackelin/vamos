@@ -59,7 +59,7 @@
 
             <div class="container w-100" >
      
-                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4" >
+                <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-4" >
                 <?php
                     include "bd/conexion.php";
 
@@ -95,7 +95,7 @@
                                     ?>
                                     <!--<article>-->
                                    
-                                    <div class="card bore border-2 border-end" style="width: 18rem; margin-right: 10px;">
+                                    <div class="card bore border-2 border-end" style="width: 20rem; margin-right: 15px;">
                                         <?php
                                         if($resultadoImagenes->num_rows==0) {
                                             echo "<img src=\"../static/imagenes/nofoto.jpg\" class=\"card-img-top\" alt=\"...\" >";
@@ -111,7 +111,7 @@
                                             <p class="card-text"> Ubicación: <?php echo $publicacion['ubicacion'] ?> </p>
                                             <p class="card-text"> Disponible: <?php echo $publicacion['fecha_inicio_publicacion'] . " al " . $publicacion['fecha_fin_publicacion'] ?> </p>
                                             <p class="card-text"> Costo: <?php echo $publicacion['costo'] ?> </p>
-                                            <p><a href="publicacion.php?id=<?php echo $publicacion['id'] ?> " class = "buttom" >Ir a publicaci&oacute;n</a> </p>
+                                            <p><a href="detallePublicacion.php?id=<?php echo $publicacion['id'] ?> " class = "buttom" >Ir a publicaci&oacute;n</a> </p>
                                         </div>
                                     </div>
                                       

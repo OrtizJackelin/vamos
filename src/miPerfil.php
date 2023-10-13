@@ -21,93 +21,304 @@
     <!--FORMULARIO-->
     <section>
 
-        <?php  
-            if(!isset($_SESSION['id'])){
-                header("Location: index.php");
-                exit;
-                var_dump($_SESSION);
-            }
-            
-            $valido = true;
-            $dato = array();
-            $mensaje = "";
-                    
-            try{
-                include "bd/conexion.php";
+    <?php  
+        if(!isset($_SESSION['id'])){
+            header("Location: index.php");
+            exit;
+            var_dump($_SESSION);
+        }
+        
+        $valido = true;
+        $dato = array();
+        $mensaje = "";
+        $directorioDestino = "../static/imagenes/usuarios/";
+        $nombreFoto = "";
+        $hash = "";
+        $actualizarClave = false;
+       
+                
+        try{
+            include "bd/conexion.php";
+        
+        } catch (mysqli_sql_exception $e) {
+            $mensajeError = "Error en la conexión a la base de datos: " . $e->getMessage();
+            // redirigir al cliente a una página de error personalizada o mostrar un mensaje en la página actual
+            header("Location: error.php?mensaje=" . urlencode($mensajeError));
+                
+        }
+
+     
+
+        //////////////////////////////////Actualizar información de formulario/////////////////////////////////////////////////
+        if(isset($_POST['enviar'])){
+
+            include "../src/inputUsuario.php";
+            $esVerificado = 0;
+
+            $fotoEmpty = false;
+            extract($_POST);
           
-            } catch (mysqli_sql_exception $e) {
-                $mensajeError = "Error en la conexión a la base de datos: " . $e->getMessage();
-                // redirigir al cliente a una página de error personalizada o mostrar un mensaje en la página actual
-                header("Location: error.php?mensaje=" . urlencode($mensajeError));
-                    
-            }
-            
-            $consulta = "SELECT email, clave, nombre, apellido, dni, fecha_nacimiento, telefono, sexo, bio, foto
-                        FROM user 
-                        WHERE id = ? ";         
-            $sentencia = $conexion->stmt_init();
+     
+            if (file_exists($directorioDestino) && ($_FILES['foto']['size']>0) ) {
+                        
+                $nombreFoto = $_FILES["foto"]["name"];
+                $tipoArchivo = $_FILES["foto"]["type"];
+                $tamanoArchivo = $_FILES["foto"]["size"];
+                $archivoTmpName = $_FILES["foto"]["tmp_name"];
+                $errorArchivo = $_FILES["foto"]["error"];
 
-            if(!$sentencia->prepare($consulta)) {
-                $mensaje = $mensaje. " Fallo la preparacion de la consulta <br>";
-                $valido = false;
-            } else {
-                
-                $sentencia->bind_param("s", $_SESSION['id']);
-                $sentencia->execute();
-                $resultado = $sentencia->get_result();
-                $sentencia->close();
+                $imageFileType = strtolower(pathinfo($nombreFoto, PATHINFO_EXTENSION));
 
-                if($dato = $resultado->fetch_array(MYSQLI_ASSOC)) {
-                    extract($dato);        
-                
-                } else {
-                    $mensaje = $mensaje. " Datos no encontrados. <br>";
-                    $valido = false;
-                
-                }
-                          
-                $consulta = "SELECT nombre
-                            FROM etiqueta_user, etiqueta
-                            WHERE etiqueta_user.id_etiqueta = etiqueta.id 
-                            and etiqueta_user.id_usuario = ?";     
+                if ($errorArchivo === UPLOAD_ERR_OK) {
+                    $check = getimagesize($archivoTmpName);
+                    if ($check !== false) {
+                        $maxFileSize = 3 * 1024 * 1024; // 5 MB
+                        if ($tamanoArchivo <= $maxFileSize) {
+                            
+                        
+                            // Mover el archivo temporal al destino deseado   
+                            $nombreFoto = uniqid() . "." . $imageFileType;             
+                            if (move_uploaded_file($archivoTmpName, $directorioDestino . $nombreFoto)) {
+                                $mensaje = $mensaje . ": " . $nombreFoto. "<br>";
 
-                $sentencia_etiqueta = $conexion->stmt_init();
-
-                if(!$sentencia_etiqueta->prepare($consulta)){
-
-                    $mensaje = $mensaje. " Fallo la preparacion de la consulta para buscar nombre de los intereses <br>";
-                    $valido = false;
-                    
-                }
-                else{
-                    
-                    $sentencia_etiqueta->bind_param("s", $_SESSION['id']);
-                    $sentencia_etiqueta->execute();
-                    $resultado_etiqueta = $sentencia_etiqueta->get_result();
-                    $sentencia_etiqueta->close();
-                }
-
-                $consultaFoto = "SELECT foto
-                                FROM user
+                                $consulta = "UPDATE  user 
+                                SET  foto = ?
                                 WHERE id = ?";
-                $sentenciaFoto = $conexion->stmt_init();
+    
+                                $sentencia = $conexion->stmt_init();
+                
+                                if(!$sentencia->prepare($consulta)) {
+                                    $mensaje = $mensaje . "fallo la preparacion de la consulta <br>";
+                                    $valido = false;
+                                } else{
+                                    $sentencia->bind_param("ss", $nombreFoto, $_SESSION['id']);        
+                                    $sentencia->execute();
+                                    if($sentencia->affected_rows <= 0) {
+                                        $mensaje = $mensaje . "error guardando foto<br>"; 
+                                        $valido = false;
+                                    }
+                                    $sentencia->close(); 
+                                }
 
-                if (!$sentenciaFoto->prepare($consultaFoto)) {
-
-                    $mensaje = $mensaje. " Fallo la preparacion de la consulta para buscar foto <br>";
-                    $valido = false;
-
+                            } else {
+                                $mensaje = $mensaje ."Hubo un error al mover el archivo. <br>";
+                                $valido = false;
+                            }
+                        }else {
+                            $mensaje = $mensaje ."El archivo es demasiado grande. El tamaño máximo permitido es 3 MB.. <br>";
+                                $valido = false;
+                        }
+                    } else {
+                        $mensaje = $mensaje . "El archivo no es una imagen válida.";
+                        $valido =false;
+                    }
                 } else {
-                    $sentenciaFoto->bind_param("s", $publicacion['id']);
-                    $sentenciaFoto->execute();
-                    $resultadoFoto = $sentenciaFoto->get_result();
-                    $sentenciaFoto->close();
+                    $mensaje = $mensaje . "Error al subir el archivo. Código de error: " . $errorArchivo . "<br>";
+                    $valido = false;
                 }
+            }  else {
 
-            }    
-            include "bd/cerrar_conexion.php";                  
-                 
-        ?>
+            }            
+                
+            
+            
+            if($valido){
+                $consulta = "UPDATE  user 
+                            SET nombre = ?, apellido = ?, dni = ?, sexo = ?, fecha_nacimiento = ?, 
+                                telefono = ?, cod_pais= ?, bio = ?, es_verificado = ?
+                            WHERE id = ?";
+
+                $sentencia = $conexion->stmt_init();
+
+                if(!$sentencia->prepare($consulta)) {
+                    $mensaje = $mensaje . "fallo la preparacion de la consulta general de los dato" . $conexion->error . " <br>";
+                    $valido = false;
+                } else{
+                    $sentencia->bind_param("ssssssssss", $nombre, $apellido, $dni, $sexo, $fechaNacimiento,
+                                            $telefono, $codPais, $bio, $esVerificado,  $_SESSION['id']);        
+                    
+                    if (!$sentencia->execute()) {
+                        $mensaje = $mensaje . "Error ejecutando la consulta de los datos: " . $sentencia->error . "<br>";
+                        $valido = false;
+                    } else {
+    
+                        if($sentencia->affected_rows <= 0) {
+                            $mensaje = $mensaje . "no se realizo ninguna actualización el los datos del usuario <br>"; 
+                            $valido = false;
+                        }
+                       
+                    }
+                    $sentencia->close(); 
+                }
+            }
+
+            ///////////////////////////////////Actualizando clave//////////////////
+
+            if ($valido && $actualizarClave) {
+          
+                $consulta = "UPDATE user
+                            SET clave = ?
+                            WHERE id = ?";
+            
+                $sentencia = $conexion->stmt_init();
+            
+                if (!$sentencia->prepare($consulta)) {
+                    $mensaje = $mensaje . "Fallo la preparación de la consulta de la clave: " . $conexion->error . "<br>";
+                    $valido = false;
+                } else {                             
+                    
+                    $sentencia->bind_param("ss", $hash, $_SESSION['id']);
+                    
+                    if (!$sentencia->execute()) {
+                        $mensaje = $mensaje . "Error ejecutando la consulta de la clave: " . $sentencia->error . "<br>";
+                        $valido = false;
+                    } else {
+                        if ($sentencia->affected_rows <= 0) {
+                            $mensaje = $mensaje . "No se realizó ninguna actualización de la clave en la bd<br>"; 
+                            $valido = false;
+                        } 
+                    }
+                    
+                    $sentencia->close();  
+                }
+            }
+                
+                //////////////////////Conculto para eliminar todos los check existentes
+                $consulta = "DELETE  FROM etiqueta_user
+                            WHERE id_usuario = ?";
+
+                $sentencia = $conexion->stmt_init();
+                if(!$sentencia->prepare($consulta)) {
+                    $mensaje = $mensaje . "fallo la preparacion de la consulta eliminar etiqueta de la db <br>";
+                    $valido = false;
+                } else{
+                    $sentencia->bind_param("s",$_SESSION['id']);
+                    $sentencia->execute();         
+                    $sentencia->close();   
+                }  
+                
+                ///////////////////////Insertamos las nuevas opciones seleccionadas//////////////
+                if(isset($interes)){
+                    foreach($interes as $id_etiqueta){
+                        echo $_SESSION['id']. "y " .$id_etiqueta;
+                                                    
+                        $consulta = "INSERT  INTO etiqueta_user
+                                    (id_usuario, id_etiqueta)
+                                    VALUES (?, ?)"; 
+
+                        $sentencia = $conexion->stmt_init();
+
+                        if(!$sentencia->prepare($consulta)) {
+                            $mensaje = $mensaje ."fallo la preparacion de la consulta para insertar 
+                            tiquetas seleccionadas por el usuario <br>";
+
+                            $valido = false;
+                        } else{
+                            $sentencia->bind_param("ss", $_SESSION['id'], $id_etiqueta);
+
+                            $sentencia->execute();
+                            
+                            if($sentencia->affected_rows <= 0) {
+                                $mensaje = $mensaje ."error guardando etiquetas en la bd<br>"; 
+                                $valido = false;
+                            }
+                            $sentencia->close();   
+                        }                
+                    }  
+                }
+            }
+ 
+
+           /////////////////////////Consultar para traer los códigos de países///////////////////////////////////
+        $consulta = "SELECT *
+                    FROM codigo_pais";
+        $sentencia_codigo = $conexion->stmt_init();
+
+        if(!$sentencia_codigo->prepare($consulta)) {
+            $mensaje = $mensaje. " Fallo la preparacion de la consulta codigo pais<br>";
+            $valido = false;
+        }
+        else {
+            $sentencia_codigo->execute();
+            $resultado_codigo = $sentencia_codigo->get_result();   
+            $sentencia_codigo->close();               
+        }
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////
+        
+        //////////////////Consultar Para traer los valores que se muestran en el fomulario////////////////////
+        $consulta = "SELECT email, clave, nombre, apellido, dni, fecha_nacimiento, telefono, sexo, bio, foto, es_verificado
+                    FROM user 
+                    WHERE id = ? ";         
+        $sentencia = $conexion->stmt_init();
+
+        if(!$sentencia->prepare($consulta)) {
+            $mensaje = $mensaje. " Fallo la preparacion de la consulta de los datos usuario <br>";
+            $valido = false;
+        } else {
+            
+            $sentencia->bind_param("s", $_SESSION['id']);
+            $sentencia->execute();
+            $resultado = $sentencia->get_result();
+            $sentencia->close();
+            
+            if($dato = $resultado->fetch_array(MYSQLI_ASSOC)) {
+                extract($dato);        
+               
+            } else {
+                $mensaje = $mensaje. " Datos no encontrados. <br>";
+                $valido = false;
+            
+            }
+        }
+        
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        /////////////////////////Consultar para tarer todas los intereses del usuario////////////////////////////////////
+        $consulta = "SELECT *
+                    FROM etiqueta";
+                
+        $sentencia_etiqueta = $conexion->stmt_init();
+
+        if(!$sentencia_etiqueta->prepare($consulta)){
+
+            $mensaje = $mensaje. " Fallo la preparacion de la consulta para buscar nombre de los intereses <br>";
+            $valido = false;
+            
+        }
+        else{
+            
+            //$sentencia_etiqueta->bind_param("s", $_SESSION['id']);
+            $sentencia_etiqueta->execute();
+            $resultado_etiqueta = $sentencia_etiqueta->get_result();
+            $sentencia_etiqueta->close();
+        }
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        //////////////////////////////////Traer la relacion entra las etiquetas y el usuario//////////////////////////////
+        $consulta = "SELECT id_etiqueta
+                        FROM etiqueta_user
+                        WHERE id_usuario = ?";
+
+        $sentenciaEtiquetaUsuario = $conexion->stmt_init();
+        if(!$sentenciaEtiquetaUsuario->prepare($consulta)){
+            $mensaje = $mensaje. " Fallo la preparacion de la consulta para buscar nombre de los intereses <br>";
+            $valido = false;
+            
+        }
+        else{
+            
+            $sentenciaEtiquetaUsuario->bind_param("s", $_SESSION['id']);
+            $sentenciaEtiquetaUsuario->execute();
+            $resultadoEtiquetaUsuario= $sentenciaEtiquetaUsuario->get_result();
+            $sentenciaEtiquetaUsuario->close();
+        }
+            
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+        include "bd/cerrar_conexion.php";                  
+                
+    ?>
 
         <div class="container w-75 ">
 
@@ -120,30 +331,41 @@
             <form class="row g-3 g-sm-1 " id="formulario" method="post" action="miPerfil.php" enctype = "multipart/form-data" >
 
                 <div class = "row g-4" style="margin-bottom: 40px">
-                    <div class = "col-md-4">
-                        <div class = "container">
-                                <div class="card" style="width: 15rem;">
+
+                    <div class = "col-md-3">
+                        
+                        <div class="card" style="width: 15rem;">
+                            <button type="button" class="btn-close position-absolute top-0 end-0 m-2" data-bs-dismiss="modal" aria-label="Close"></button>
+                            <?php
+                                if (!isset($foto)) {
+                                    echo '<img src="../static/imagenes/usuarios/person-bounding-box.svg" 
+                                    class="card-img-top" alt="Imagen no disponible">';
+                                } else{
+                                    echo "<img src=\"../static/imagenes/usuarios/" . $foto . "\" 
+                                    class=\"card-img-top\" alt=\"Imagen no disponible\">";
                                     
-                                    <?php
-                                     $first = true; // Variable para controlar la clase "active" en el primer elemento
-                                     if ($resultadoFoto->num_rows == 0) {
-                                        echo '<img src="../static/imagenes/usuarios/person-bounding-box.svg" 
-                                        class="card-img-top" alt="Imagen no disponible">';
-                                     } else{
-                                        echo"../static/imagenes/usuarios/".$_SESSION['id'];
-                                     }
-                                    ?>                              
-                                <div class="card-body">
-                                    <input class="form-control form-control-sm" id="formFileSm" type="file">
-                                </div>
-                            </div>                  
-                        </div>
+                                }
+                            ?>                              
+                            <div class="card-body">
+                                <input class="form-control form-control-sm" id="formFileSm" type="file" name = "foto">
+                            </div>
+                        </div>                  
+                    
                     </div>
 
-                    <div class = "col-md-8" >
+                    <div class = "col-md-9" >
                         <div class = "row" style="margin-bottom: 60px">
                             <div class="col-md-12" >
-                                <img src="../static/imagenes/redes/cc-square.svg"alt="cuenta verificada" title ="cuenta verificada" style="float: right;">
+                                <?php
+                                    if($es_verificado==1){
+                                        echo"<img src=\"../static/imagenes/redes/cc-squareVerificado.svg\"alt=\"cuenta verificada\" 
+                                        title =\"cuenta verificada\" style=\"float: right;\">";
+                                    } else {
+                                        echo"<img src=\"../static/imagenes/redes/cc-square.svg\"alt=\"cuenta no verificada\" 
+                                        title =\"cuenta verificada\" style=\"float: right;\">";
+                                    }
+                                ?>
+                                
                             </div>
                         </div>
 
@@ -167,15 +389,36 @@
                             </div>
 
                         </div>
-                        <div class = "row">
+                        <div class = "row" style="margin-bottom: 30px">
 
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label for="fechaNacimiento" class="form-label">Fecha de nacimiento</label>
                                 <input type="date" class="form-control" id="fechaNacimiento" name= "fechaNacimiento" 
                                 value="<?php if(isset($fecha_nacimiento)) echo $fecha_nacimiento;?>" min="16" max="150" required>
                             </div>
 
-                            <div class="col-md-4">
+                            <div class="col-md-3">                    
+                                <label for="codPais" class="form-label">Cod-Pais</label>
+                                <select id="codPais" class="form-select" name = "codPais" required>
+                                    <option value="">Seleccione</option>
+                                    <?php
+                                
+                                    while($fila = $resultado_codigo->fetch_array(MYSQLI_ASSOC)){
+                            
+                                        echo "<option value=\"" . $fila['codigo'] . "\"";
+
+                                        if (isset($codPais) && $codPais === $fila['codigo']) {
+                                            echo " selected";
+                                        }
+                                        
+                                        echo ">" . $fila['pais'] . "</option>";
+                                    }
+                                    ?>                       
+
+                                </select>
+                            </div>
+
+                            <div class="col-md-3">
                                 <label for="telefono" class="form-label">Tel&eacute;fono</label>
                                 <input type="number" class="form-control" id="telefono" name = "telefono" 
                                 min="1000000000" maxlength="9999999999" 
@@ -183,7 +426,7 @@
                             </div>
 
 
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label for="sexo" class="form-label">Sexo</label>
                                 <select id="sexo" name = "sexo" class="form-select" required>
                                     <option  value="" selected> Seleccione </option>
@@ -205,59 +448,61 @@
 
           
                 <p>Intereses</p>
-
-                <?php
-
-                while($fila = $resultado_etiqueta->fetch_array(MYSQLI_ASSOC)){
-
-                    echo "<div class=\"row g-3\" style=\"margin-bottom: 30px\">
-                        <div class=\"col-md-2\">
-                            <div class=\"form-check\">
-                                <input class=\"form-check-input\" type=\"checkbox\" name = \"interes[]\" id=\"flexCheckChecked\" 
-                                value = " . $fila['nombre'] . " checked>
-                                <label class=\"form-check-label\" for=\"flexCheckChecked\">"
-                                    .$fila['nombre'].
-                                "</label>
-                            </div> 
-                        </div>                       
-                    </div>";
-                }
-
-                ?>            
+                <div class="row" style="margin-bottom: 30px">
+                
+                <?php      
+                $etiquetaSele = $resultadoEtiquetaUsuario->fetch_all(MYSQLI_ASSOC);
+             
+                $etiquetas = array_column($etiquetaSele, "id_etiqueta");
+                $etiquetas = array_combine($etiquetas, $etiquetas);
+                while($fila = $resultado_etiqueta->fetch_array(MYSQLI_ASSOC)){                         
+                ?>
+                <div class="col-md-2">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name = "interes[]" id="flexCheckChecked" 
+                        value =  <?php echo $fila['id']; ?>
+                        <?php if(isset($etiquetas[$fila['id']])) echo "checked"; ?>>
+                        <label class="form-check-label" for="flexCheckChecked">
+                            <?php echo $fila['nombre'] ?>
+                        </label>
+                    </div> 
+                </div>     
+                    
+                <?php } ?>  
+                </div>                       
+                         
                 
                 <div class = "row" style="margin-bottom: 40px">
                 
                     <div class="col-md-4">
                         <label for="email" class="form-label">Email</label>
                         <input type="email" class="form-control" id="email" name = "email" 
-                        value="<?php if(isset($email)) echo $email;?>" required>
+                        value="<?php if(isset($email)) echo $email;?>" readonly>
                     </div>
 
                     <div class="col-md-4">
                         <label for="clave" class="form-label">Password</label>
                         <input type="password" id="clave" name="clave"  class="form-control" 
-                            pattern="^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@#$%^&+=!])(?!.*\s).{8,}$" 
-                            value="<?php if(isset($clave)) echo $clave;?>" required>
+                            pattern="^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@#$%^&+=!])(?!.*\s).{8,}$">
                     </div>
 
                     <div class="col-md-4">
                         <label for="repetirClave" class="form-label">Repetir Password</label>
-                        <input type="password" id="repetirClave" name="repetirClave"  class="form-control" 
-                        required>
+                        <input type="password" id="repetirClave" name="repetirClave"  class="form-control" >
                     </div>
 
                 </div>
                 
               <!-- <div class = "row" style="margin-bottom: 30px">-->
      
-                    <!--<div class="col-4 ">
+                  <!--  <div class="col-4 ">
                         <button type="submit" class="btn btn-secondary" id="btn_submit_form_evento" name = "guardar">Guardar</button>
                     </div>-->
 
                     
                     <!-- Button trigger modal -->
                     <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#staticBackdrop" name = "guardar">
-                                Guardar
+                        Guardar
                     </button>
 
                     <!-- Modal -->
@@ -294,7 +539,7 @@
                     <div>
                         <H6><b><?php echo $mensaje ?></H6></b>
                     </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    <button type="button" class="btn-close position-absolute top-0 end-0 m-2" rol="alert" aria-label="Close"></button>
                 </div> 
                 <?php
                 }
@@ -312,7 +557,8 @@
     <!-- SCRIPT -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
-        crossorigin="anonymous"></script>
+        crossorigin="anonymous">
+    </script>
 </body>
 
 </html>

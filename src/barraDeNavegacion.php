@@ -18,7 +18,18 @@ echo "Hola " . $_SESSION['id'];
 
         <div class="btn-group " style = "margin-right:60px;">
             <button type="button" class="btn btn-success" >
-                <img src="../static/imagenes/redes/person-circle.svg" alt="person-circle">
+                
+                <?php
+                    if (isset($_SESSION['id'])) {
+                    ?>
+                        <a class="dropdown-item" href="../src/miPerfil.php">
+                            <img src="../static/imagenes/redes/person-circle.svg" alt="person-circle">
+                        </a>
+                        <?php } else { ?>
+                        <a class="dropdown-item" href="../src/iniciarSesion.php">
+                            <img src="../static/imagenes/redes/person-circle.svg" alt="person-circle">
+                        </a>
+                <?php }?>
             </button>
 
             <button type="button" class="btn btn-success dropdown-toggle dropdown-toggle-split"

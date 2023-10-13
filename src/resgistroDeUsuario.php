@@ -20,169 +20,94 @@
 
     <!--FORMULARIO-->
     <section>
-        <?php  
-           
-            if(!isset($_SESSION['email'])){
-                header("Location: validarCorreo.php");
-               exit;
-            }
+    <?php  
+        
+        if(!isset($_SESSION['email'])){
+            header("Location: validarCorreo.php");
+            exit;
+        }
 
-            $valido = true;
-            $mensaje = "";
-            $hash = "";
-            extract($_POST);
+        $valido = true;
+        $mensaje = "";
+        $hash = "";
+        extract($_POST);
 
-            try{
-                include "bd/conexion.php";
+        try{
+            include "bd/conexion.php";
 
-            } catch(mysqli_sql_exception $e){
-                $mensajeError = "Error en la conexión a la base de datos: " . $e->getMessage();
-                // redirigir al cliente a una página de error 
-                header("Location: error.php?mensaje=" . urlencode($mensajeError));
-            }
-
-            $consulta = "SELECT *
-                        FROM codigo_pais";
-            $sentencia_codigo = $conexion->stmt_init();
-
-            if(!$sentencia_codigo->prepare($consulta)) {
-                $mensaje = $mensaje. " Fallo la preparacion de la consulta <br>";
-                $valido = false;
-            }
-            else {
-                $sentencia_codigo->execute();
-                $resultado_codigo = $sentencia_codigo->get_result();   
-                $sentencia_codigo->close();               
-            }
-
-            if (isset($_POST['enviar'])){
+        } catch(mysqli_sql_exception $e){
+            $mensajeError = "Error en la conexión a la base de datos: " . $e->getMessage();
+            // redirigir al cliente a una página de error 
+            header("Location: error.php?mensaje=" . urlencode($mensajeError));
+        }
 
 
-                if (isset($_POST['clave'])) {
-                
-                    $patron = '/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@#$%^&+=!])(?!.*\s).{8,}$/';
+        ///////////////////Consultar para traer los códigos de países/////////
+        $consulta = "SELECT *
+                    FROM codigo_pais";
+        $sentencia_codigo = $conexion->stmt_init();
 
-                    if (!preg_match($patron, $_POST['clave'])) {
-                        $mensaje = $mensaje." La contraseña no cumple con los requisitos.<br>";
-                        $valido = false;
-                    }
-                }
+        if(!$sentencia_codigo->prepare($consulta)) {
+            $mensaje = $mensaje. " Fallo la preparacion de la consulta <br>";
+            $valido = false;
+        }
+        else {
+            $sentencia_codigo->execute();
+            $resultado_codigo = $sentencia_codigo->get_result();   
+            $sentencia_codigo->close();               
+        }
+        //////////////////////////////////////////////////////////////////////////////////////
 
-                if (isset($_POST['repetirClave'])){
-                    if($_POST['clave'] === $_POST['repetirClave']){
-                        // Generar un hash seguro de la contraseña
-                        $hash = password_hash($_POST['clave'], PASSWORD_DEFAULT); 
-                     
-                    } else {
-                        $mensaje = $mensaje." Las claves no coinciden <br>";
-                        $valido = false;     
-                    }                   
-                }
+        /////////////////////////Validar inputs en el servidor////////////////////////////////
 
-                if (isset($_POST['nombre'])){
-                
-                    $patron = "/^[A-Za-z\s]+$/";
+        if (isset($_POST['enviar'])){
 
-                    // Utiliza la función preg_match para verificar si el valor cumple con el patrón
-                    if (!preg_match($patron, $_POST['nombre'])) {
-                        $mensaje = $mensaje. " El campo Nombre no es válido. Debe contener solo letras y espacios<br>";
-                        $valido = false;
-                    }                     
-                }
-
-                if (isset($_POST['apellido'])){
-                
-                    $patron = "/^[A-Za-z\s]+$/";
-
-                    // Utiliza la función preg_match para verificar si el valor cumple con el patrón
-                    if (!preg_match($patron, $_POST['apellido'])) {
-                        $mensaje = $mensaje. " El campo Apellido no es válido. Debe contener solo letras y espacios<br>";
-                        $valido = false;
-                    }
-                    
-                }
-
-                if (isset($_POST['fechaNacimiento'])){
+            include  "../src/inputUsuario.php";
             
-                    $fechaActual = new DateTime();
-                    $fechaNacimiento = $_POST['fechaNacimiento'];                    
-                    $fechaNacimiento = new DateTime($fechaNacimiento);
-                    $edadMinima = 18; // Edad mínima requerida
-                    $diferencia = $fechaNacimiento->diff($fechaActual);
+        }
+        ////////////////////////////////////////////////////////////////////////////////////////
 
-                    if ($fechaNacimiento > $fechaActual) {
-                        $mensaje = $mensaje." La fecha ingresada no puede ser superior a la fecha actual. <br>";
-                        $valido = false;
-                    } elseif ($diferencia->y < $edadMinima) {
-                        $mensaje = $mensaje." Debes tener al menos 18 años para registrarte.<br>";
-                        $valido = false;
-                    } else  {               
-                        $fechaFormateada = $fechaNacimiento->format('Y-m-d');
-                    }                     
-
-                }
-                if (!isset($_POST['sexo'])){
-
-                    $valido = false;
-                    $mensaje = $mensaje." Debe seleccionar el sexo <br>";
-                    
-                }
-
-                if (!isset($_POST['codPais'])){
-
-                    $valido = false;
-                    $mensaje = $mensaje." Debe seleccionar el codigo de pa&iacute;s.<br>";
-                    
-                }
-                if (!isset($_POST['telefono'])){
-
-                    $valido = false;
-                    $mensaje = $mensaje." Debe ingresar el n&uacute;mero de tel&eacute;fono.<br>";
-                    
-                }
-            }
+        if (isset($_POST['enviar']) && $valido){
             
+            $consulta = "INSERT INTO  
+            user (nombre, apellido, dni, sexo, fecha_nacimiento, telefono, email, clave, cod_pais)
+            VALUES
+            (?, ?, ?, ?, ?, ?, ?, ?, ?) ";
 
-            if (isset($_POST['enviar']) && $valido){
+            $sentencia = $conexion->stmt_init();
+            if(!$sentencia->prepare($consulta)){
+                echo "fallo la preparacion de la consulta <br>";
+            }
+            else{
+                $sentencia->bind_param("sssssssss", $_POST['nombre'], $_POST['apellido'],
+                                        $_POST['dni'], $_POST['sexo'], $_POST['fechaNacimiento'], 
+                                        $_POST['telefono'], $_SESSION['email'], $hash, $_POST['codPais'],);
                 
-                $consulta = "INSERT INTO  
-                user (nombre, apellido, dni, sexo, fecha_nacimiento, telefono, email, clave, cod_pais)
-                VALUES
-                (?, ?, ?, ?, ?, ?, ?, ?, ?) ";
-
-                $sentencia = $conexion->stmt_init();
-                if(!$sentencia->prepare($consulta)){
-                    echo "fallo la preparacion de la consulta <br>";
+                try{
+                    $sentencia->execute();//revisar hacer try catch arrojo error por dni que es clave repetido   
+                } catch (Exception $e) {
+                    
+                    $mensaje = "Error: " . $e->getMessage();
+                    $valido = false;
+            
+                }
+                
+                if($sentencia->affected_rows > 0){
+                    unset($_SESSION['email']);
+                    $_SESSION['id'] = $sentencia->insert_id;
+                    $sentencia->close();
+                    header("Location: index.php");
+                    exit;                           
                 }
                 else{
-                    $sentencia->bind_param("sssssssss", $_POST['nombre'], $_POST['apellido'],
-                                            $_POST['dni'], $_POST['sexo'], $_POST['fechaNacimiento'], 
-                                            $_POST['telefono'], $_SESSION['email'], $hash, $_POST['codPais'],);
-                    
-                    try{
-                        $sentencia->execute();//revisar hacer try catch arrojo error por dni que es clave repetido   
-                    } catch (Exception $e) {
-                        
-                        $mensaje = "Error: " . $e->getMessage();
-                        $valido = false;
-                
-                    }
-                    
-                    if($sentencia->affected_rows > 0){
-                        unset($_SESSION['email']);
-                        $_SESSION['id'] = $sentencia->insert_id;
-                        $sentencia->close();
-                        header("Location: index.php");
-                        exit;                           
-                    }
-                    else{
-                        echo"error guardando<br>"; // ver aqi 
-                    }
-                }                           
-                include "bd/cerrar_conexion.php";
-            } else{
-               
-        ?>
+                    echo"error guardando<br>"; // ver aqi 
+                }
+            }  
+                                     
+            include "bd/cerrar_conexion.php";
+        } else{
+            
+    ?>
         
         <div class="container w-75 ">
 
@@ -247,7 +172,7 @@
 
                 <div class="col-md-3">
                     <label for="sexo" class="form-label">Sexo</label>
-                    <select id="sexo" class="form-select" name = "sexo" value = "<?php echo $sexo ?>" required>
+                    <select id="sexo" class="form-select" name = "sexo" value = "<?php echo $sexo ?>">
                         <option value="">Seleccione</option>
                         <option value="f"<?php if(isset($sexo) && $sexo ==='f') echo 'selected'?> checked>Femenino</option>
                         <option value="m" <?php if(isset($sexo) && $sexo ==='m') echo 'selected'?> checked>Masculino</option>

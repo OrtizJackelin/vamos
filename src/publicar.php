@@ -150,7 +150,7 @@
                                 }  
                             }  
                             
-                            foreach($_POST['interes'] as $id_servicio){
+                            foreach($_POST['servicio'] as $id_servicio){
                               
                                 $consulta = "INSERT INTO  servicio_publicacion(id_publicacion, id_servicio)
                                 VALUES (?, ?) ";
@@ -255,7 +255,7 @@
 
                                echo "<div class=\"col-md-2\">
                                     <div class=\"form-check\">
-                                        <input class=\"form-check-input\" type=\"checkbox\" name = \"interes[]\" id=\"flexCheckDefault\" 
+                                        <input class=\"form-check-input\" type=\"checkbox\" name = \"servicio[]\" id=\"flexCheckDefault\" 
                                         value = " . $fila['id'] . ">
                                         <label class=\"form-check-label\" for=\"flexCheckDefault\">"
                                             .$fila['nombre'].

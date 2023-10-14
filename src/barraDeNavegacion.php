@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once ('sessionStart.php');
 
 if($_SERVER['PHP_SELF']!="/Practicos/ProyectoProgramacionIII/src/resgistroDeUsuario.php"){
     unset($_SESSION['email']);

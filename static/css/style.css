@@ -2,9 +2,20 @@
     box-sizing: border-box;
 }
 
-body {
+html,body {
+    height:100%;
+    width: 100%;
     font-family: 'Roboto', sans-serif;
+    margin: 0; /* Elimina el margen exterior */
+    padding: 0; /* Elimina el espacio interno */
+    border: 0; /* Elimina los bordes */
+    
 }
+
+/*.sectionPrincipal {
+    height:100%;
+    flex:1;
+}*/
 
 /* COLOR PARA TEXTO DIFERENTE */
 .colorDistinto {
@@ -116,6 +127,9 @@ footer {
     display: flex;
     flex-direction: row;
     justify-content: space-around;
+   /* position: absolute;
+    bottom: 0;
+    width: 100%;*/
 }
 
 footer p {

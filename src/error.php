@@ -37,27 +37,30 @@
           
             }
         ?>
-        <div class = "container">
-            <section>
-            <form class="row g-3 " id="formulario" method="post" action="error.php" >
+        <section class = "sectionPrincipal">
+            <div class = "container">
+                
+                <section>
+                <form class="row g-3 " id="formulario" method="post" action="error.php" >
 
-                <div class="alert alert-primary d-flex align-items-center alert-dismissible" role="alert" style = "margin-top: 20px; margin-bottom: 5px; width:100%;">
-                    <?php include "../static/imagenes/redes/exclamation-triangle.svg" ?>                
-                    <div>
-                        <H6><b><?php echo $mensajeError ?></H6></b>
+                    <div class="alert alert-primary d-flex align-items-center alert-dismissible" role="alert" style = "margin-top: 20px; margin-bottom: 5px; width:100%;">
+                        <?php include "../static/imagenes/redes/exclamation-triangle.svg" ?>                
+                        <div>
+                            <H6><b><?php echo $mensajeError ?></H6></b>
+                        </div>
+                        <button type="submit" class="" data-bs-dismiss="alert" aria-label="" name = "volver"></button>
+                    </div>         
+                </form>
+                </section>
+
+                <section>
+                    <div style="text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; ">
+                        <img src="../static/imagenes/losiento1.png" class="img-fluid" alt="" style = "height: 500px">
                     </div>
-                    <button type="submit" class="" data-bs-dismiss="alert" aria-label="" name = "volver"></button>
-                </div>         
-            </form>
-            </section>
-
-            <section>
-                <div style="text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; ">
-                    <img src="../static/imagenes/losiento1.png" class="img-fluid" alt="" style = "height: 500px">
-                </div>
-            </section>
-       
-        </div>
+                </section>
+        
+            </div>
+        </section>
         <!--Footer-->
         <footer>
             <?php include("../static/html/footer.html"); ?>

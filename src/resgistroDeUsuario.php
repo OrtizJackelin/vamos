@@ -1,3 +1,93 @@
+<?php  
+        
+    if(!isset($_SESSION['email'])){
+        header("Location: validarCorreo.php");
+        exit;
+    }
+
+    $valido = true;
+    $mensaje = "";
+    $hash = "";
+    extract($_POST);
+
+    try{
+        include "bd/conexion.php";
+
+    } catch(mysqli_sql_exception $e){
+        $mensajeError = "Error en la conexión a la base de datos: " . $e->getMessage();
+        // redirigir al cliente a una página de error 
+        header("Location: error.php?mensaje=" . urlencode($mensajeError));
+    }
+
+
+    ///////////////////Consultar para traer los códigos de países/////////
+    $consulta = "SELECT *
+                FROM codigo_pais";
+    $sentencia_codigo = $conexion->stmt_init();
+
+    if(!$sentencia_codigo->prepare($consulta)) {
+        $mensaje = $mensaje. " Fallo la preparacion de la consulta <br>";
+        $valido = false;
+    }
+    else {
+        $sentencia_codigo->execute();
+        $resultado_codigo = $sentencia_codigo->get_result();   
+        $sentencia_codigo->close();               
+    }
+    //////////////////////////////////////////////////////////////////////////////////////
+
+    /////////////////////////Validar inputs en el servidor////////////////////////////////
+
+    if (isset($_POST['enviar'])){
+
+        include  "../src/inputUsuario.php";
+        
+    }
+    ////////////////////////////////////////////////////////////////////////////////////////
+
+    if (isset($_POST['enviar']) && $valido){
+        
+        $consulta = "INSERT INTO  
+        user (nombre, apellido, dni, sexo, fecha_nacimiento, telefono, email, clave, cod_pais)
+        VALUES
+        (?, ?, ?, ?, ?, ?, ?, ?, ?) ";
+
+        $sentencia = $conexion->stmt_init();
+        if(!$sentencia->prepare($consulta)){
+            echo "fallo la preparacion de la consulta <br>";
+        }
+        else{
+            $sentencia->bind_param("sssssssss", $_POST['nombre'], $_POST['apellido'],
+                                    $_POST['dni'], $_POST['sexo'], $_POST['fechaNacimiento'], 
+                                    $_POST['telefono'], $_SESSION['email'], $hash, $_POST['codPais'],);
+            
+            try{
+                $sentencia->execute();//revisar hacer try catch arrojo error por dni que es clave repetido   
+            } catch (Exception $e) {
+                
+                $mensaje = "Error: " . $e->getMessage();
+                $valido = false;
+        
+            }
+            
+            if($sentencia->affected_rows > 0){
+                unset($_SESSION['email']);
+                $_SESSION['id'] = $sentencia->insert_id;
+                $_SESSION['nombre'] = $_POST['nombre'];
+                $_SESSION['esVerificado'] = 0;
+                $sentencia->close();
+                header("Location: index.php");
+                exit;                           
+            }
+            else{
+                echo"error guardando<br>"; // ver aqi 
+            }
+        }  
+                                    
+        include "bd/cerrar_conexion.php";
+    } else{
+        
+?>
 <!DOCTYPE html>
 <html lang="es">
 
@@ -19,96 +109,8 @@
     </header>
 
     <!--FORMULARIO-->
-    <section>
-    <?php  
-        
-        if(!isset($_SESSION['email'])){
-            header("Location: validarCorreo.php");
-            exit;
-        }
-
-        $valido = true;
-        $mensaje = "";
-        $hash = "";
-        extract($_POST);
-
-        try{
-            include "bd/conexion.php";
-
-        } catch(mysqli_sql_exception $e){
-            $mensajeError = "Error en la conexión a la base de datos: " . $e->getMessage();
-            // redirigir al cliente a una página de error 
-            header("Location: error.php?mensaje=" . urlencode($mensajeError));
-        }
-
-
-        ///////////////////Consultar para traer los códigos de países/////////
-        $consulta = "SELECT *
-                    FROM codigo_pais";
-        $sentencia_codigo = $conexion->stmt_init();
-
-        if(!$sentencia_codigo->prepare($consulta)) {
-            $mensaje = $mensaje. " Fallo la preparacion de la consulta <br>";
-            $valido = false;
-        }
-        else {
-            $sentencia_codigo->execute();
-            $resultado_codigo = $sentencia_codigo->get_result();   
-            $sentencia_codigo->close();               
-        }
-        //////////////////////////////////////////////////////////////////////////////////////
-
-        /////////////////////////Validar inputs en el servidor////////////////////////////////
-
-        if (isset($_POST['enviar'])){
-
-            include  "../src/inputUsuario.php";
-            
-        }
-        ////////////////////////////////////////////////////////////////////////////////////////
-
-        if (isset($_POST['enviar']) && $valido){
-            
-            $consulta = "INSERT INTO  
-            user (nombre, apellido, dni, sexo, fecha_nacimiento, telefono, email, clave, cod_pais)
-            VALUES
-            (?, ?, ?, ?, ?, ?, ?, ?, ?) ";
-
-            $sentencia = $conexion->stmt_init();
-            if(!$sentencia->prepare($consulta)){
-                echo "fallo la preparacion de la consulta <br>";
-            }
-            else{
-                $sentencia->bind_param("sssssssss", $_POST['nombre'], $_POST['apellido'],
-                                        $_POST['dni'], $_POST['sexo'], $_POST['fechaNacimiento'], 
-                                        $_POST['telefono'], $_SESSION['email'], $hash, $_POST['codPais'],);
-                
-                try{
-                    $sentencia->execute();//revisar hacer try catch arrojo error por dni que es clave repetido   
-                } catch (Exception $e) {
-                    
-                    $mensaje = "Error: " . $e->getMessage();
-                    $valido = false;
-            
-                }
-                
-                if($sentencia->affected_rows > 0){
-                    unset($_SESSION['email']);
-                    $_SESSION['id'] = $sentencia->insert_id;
-                    $sentencia->close();
-                    header("Location: index.php");
-                    exit;                           
-                }
-                else{
-                    echo"error guardando<br>"; // ver aqi 
-                }
-            }  
-                                     
-            include "bd/cerrar_conexion.php";
-        } else{
-            
-    ?>
-        
+    <section class = "sectionPrincipal">
+          
         <div class="container w-75 ">
 
             <div class=" col-md-12 text-center" style=" margin-top: 20px;">
@@ -217,8 +219,7 @@
                 }
             ?>
         </div>
-    </section>
-    <?php } ?>
+    </section> 
 
     <!--FOOTER-->
     <footer>
@@ -233,3 +234,4 @@
 </body>
 
 </html>
+<?php } ?>

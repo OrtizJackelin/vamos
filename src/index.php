@@ -1,5 +1,34 @@
+<?php
+    require_once ('sessionStart.php');
+
+    try{
+        include "bd/conexion.php";
+        //throw new Exception("Error Processing Request", 1);        
+    
+    } catch (mysqli_sql_exception $e) {
+        $mensajeError = "Error en la conexión a la base de datos: " . $e->getMessage();
+        // redirigir al cliente a una página de error personalizada o mostrar un mensaje en la página actual
+        header("Location: error.php?mensaje=" . urlencode($mensajeError));
+            
+    }
+
+    $consulta = "SELECT *
+                FROM publicacion
+                WHERE estado =1 and (fecha_fin_publicacion >= NOW() || fecha_inicio_publicacion IS NULL AND fecha_fin_publicacion  IS NULL)";
+
+    $sentencia = $conexion->stmt_init();
+    if (!$sentencia->prepare($consulta)) {
+        echo "Fallo la preparación de la consulta <br>";
+    } else {
+        $sentencia->execute();
+        $resultado = $sentencia->get_result();
+        $sentencia->close();
+    }
+
+?>
+
 <html>
-<head>
+    <head>
         <title>Vamos</title>
         <meta charset="utf-8">
         <link rel="stylesheet" href="../static/css/style.css" type="text/css">
@@ -8,7 +37,7 @@
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
             integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-</head>
+    </head>
     <body>
         <header>
             <?php include("barraDeNavegacion.php"); ?>
@@ -28,7 +57,7 @@
 
         </header>
 
-        <section>
+        <section class = "sectionPrincipal">
 
             <div class="container" style="margin-bottom: 10px;">
                 <p>
@@ -57,75 +86,51 @@
                 </div>
             </div>
 
-            <div class="container w-100" >
+            <div  style = "display:flex; justify-content:center; aling-item:center; width:100%;padding:10px; " >
      
-                <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-4" >
-                <?php
-                    include "bd/conexion.php";
+                <div style="display:flex; justify-content:center; flex-wrap:wrap; "  >
 
-                    if ($conexion->connect_errno) {
-                        echo "Fallo la conexión";
-                        die("$conexion->connect_errno:$conexion->connect_errno");
+                <?php while ($publicacion = $resultado->fetch_array(MYSQLI_ASSOC)) {
+            
+                    $consultaImagenes = "SELECT ruta
+                                    FROM imagen
+                                    WHERE id_publicacion = ?";
+                    $sentenciaImagenes = $conexion->stmt_init();
+
+                    if (!$sentenciaImagenes->prepare($consultaImagenes)) {
+                    echo "Fallo la preparación de la consulta de imagen <br>";
                     } else {
-                        $consulta = "SELECT id, ubicacion, costo, fecha_inicio_publicacion, fecha_fin_publicacion
-                                    FROM publicacion";
+                    $sentenciaImagenes->bind_param("s", $publicacion['id']);
+                    $sentenciaImagenes->execute();
+                    $resultadoImagenes = $sentenciaImagenes->get_result();
 
-                        $sentencia = $conexion->stmt_init();
-                        if (!$sentencia->prepare($consulta)) {
-                            echo "Fallo la preparación de la consulta <br>";
-                        } else {
-                            $sentencia->execute();
-                            $resultado = $sentencia->get_result();
-                           
+                    ?>
+                    <!--<article>-->
 
-                            while ($publicacion = $resultado->fetch_array(MYSQLI_ASSOC)) {
-                                // Obtener imágenes de esta publicación
-                                $consultaImagenes = "SELECT ruta
-                                                    FROM imagen
-                                                    WHERE id_publicacion = ?";
-                                $sentenciaImagenes = $conexion->stmt_init();
-                                
-                                if (!$sentenciaImagenes->prepare($consultaImagenes)) {
-                                    echo "Fallo la preparación de la consulta de imagen <br>";
-                                } else {
-                                    $sentenciaImagenes->bind_param("s", $publicacion['id']);
-                                    $sentenciaImagenes->execute();
-                                    $resultadoImagenes = $sentenciaImagenes->get_result();
-                                    
-                                    ?>
-                                    <!--<article>-->
-                                   
-                                    <div class="card bore border-2 border-end" style="width: 20rem; margin-right: 15px;">
-                                        <?php
-                                        if($resultadoImagenes->num_rows==0) {
-                                            echo "<img src=\"../static/imagenes/nofoto.jpg\" class=\"card-img-top\" alt=\"...\" >";
-                                        }
-                                        else {
-                                            $nombre = $resultadoImagenes->fetch_array(MYSQLI_ASSOC); 
-
-                                            echo "<img src=\"../static/imagenes/publicaciones/" . $publicacion['id']. "/" . $nombre['ruta'] . "\" 
-                                            class=\"card-img-top \" alt=\"...\" >";
-                                        }
-                                        ?>
-                                        <div class="card-body" style="background-color: rgb(223, 221, 221);">
-                                            <p class="card-text"> Ubicación: <?php echo $publicacion['ubicacion'] ?> </p>
-                                            <p class="card-text"> Disponible: <?php echo $publicacion['fecha_inicio_publicacion'] . " al " . $publicacion['fecha_fin_publicacion'] ?> </p>
-                                            <p class="card-text"> Costo: <?php echo $publicacion['costo'] ?> </p>
-                                            <p><a href="detallePublicacion.php?id=<?php echo $publicacion['id'] ?> " class = "buttom" >Ir a publicaci&oacute;n</a> </p>
-                                        </div>
-                                    </div>
-                                      
-                                    <!--</article>-->
-                                    <?php
-                                }
-                               // <div class="card" style="width: 18rem;">
- 
-                            }
+                    <div class="card bore border-2 border-end" style="width: 20rem; margin: 10px;">
+                        <?php
+                        if($resultadoImagenes->num_rows==0) {
+                            echo "<img src=\"../static/imagenes/nofoto.jpg\" class=\"card-img-top\" alt=\"...\" >";
                         }
-                        include "bd/cerrar_conexion.php";
-                    }
-                ?>
+                        else {
+                            $nombre = $resultadoImagenes->fetch_array(MYSQLI_ASSOC); 
+
+                            echo "<img src=\"../static/imagenes/publicaciones/" . $publicacion['id']. "/" . $nombre['ruta'] . "\" 
+                            class=\"card-img-top \" alt=\"...\" >";
+                        }
+                        ?>
+                        <div class="card-body" style="background-color: rgb(223, 221, 221);">
+                            <p class="card-text"> Ubicación: <?php echo $publicacion['ubicacion'] ?> </p>
+                            <p class="card-text"> Disponible: <?php echo $publicacion['fecha_inicio_publicacion'] . " al " . $publicacion['fecha_fin_publicacion'] ?> </p>
+                            <p class="card-text"> Costo: <?php echo $publicacion['costo'] ?> </p>
+                            <p><a href="detallePublicacion.php?id=<?php echo $publicacion['id'] ?> " class = "buttom" >Ir a publicaci&oacute;n</a> </p>
+                        </div>
+                    </div>
+                        
+                <?php  } }  include "bd/cerrar_conexion.php" ?>
+                
                 </div>
+
             </div><br><br>
         </section>
         <!--Footer-->
@@ -135,6 +140,7 @@
         
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
-        crossorigin="anonymous"></script>
+        crossorigin="anonymous">
+        </script>
     </body>
 </html>

@@ -1,6 +1,9 @@
 
 <?php
     require_once ('sessionStart.php');
+    $mensaje = "";
+
+
     try{
         include "bd/conexion.php";
 
@@ -12,7 +15,8 @@
     }
 
     /////////////////////////////////////Modtrar Información de Publicación///////////////////////////////  
-    
+    $usuarioHabilitado = 1;
+    $habilitado = "enable";
 
     $consulta = "SELECT *
                 FROM publicacion
@@ -34,6 +38,18 @@
 
             if ($publicacion = $resultado->fetch_array(MYSQLI_ASSOC)) {
                 extract($publicacion);
+                $fechaInicio = $fecha_inicio_publicacion;
+                $fechaFin = $fecha_fin_publicacion;
+                
+                if(isset($_SESSION['id'])){
+                    if($_SESSION['id'] === $id_usuario){
+                        $usuarioHabilitado = 0;
+                        $habilitado = "disabled";
+                    }
+                } else {
+                    $habilitado = "disabled";
+                }
+
                 // Obtener imágenes de esta publicación
                 $consultaImagenes = "SELECT ruta
                                     FROM imagen
@@ -45,6 +61,7 @@
                     $sentenciaImagenes->execute();
                     $resultadoImagenes = $sentenciaImagenes->get_result();
                     $sentenciaImagenes->close();
+                
                     
                 } else {
                     echo "Fallo la preparación de la consulta de imagen <br>";
@@ -65,8 +82,9 @@
                 $resultadoFechas = $sentencia->get_result();
                 $sentencia->close();
                 if($datos=$resultadoFechas->fetch_all(MYSQLI_ASSOC)){
-              
+                    //var_dump($datos);
                     $datosJson = json_encode($datos);
+                    
                 }
             }
 
@@ -88,7 +106,7 @@
             }
         }
     }
-    include "bd/cerrar_conexion.php";                        
+    include "bd/cerrar_conexion.php";                     
 ?>
 
 <html>
@@ -109,10 +127,33 @@
 
     document.addEventListener("DOMContentLoaded", () => {
 
-        var arregloEnJavaScript = <?php echo $datosJson; ?>;
-    // Ahora puedes acceder al arreglo en JavaScript
-        console.log(arregloEnJavaScript);
+        var arregloEnJavaScript = <?php if(isset( $datosJson)){
+                                            echo $datosJson;
+                                        } else { 
+                                            echo "[]";
+                                        }
+                                    ?>;
+                                    
+        var fechaMinimoPublicacion = <?php if(!isset($fechaInicio) || $fechaInicio === null){
+                                                echo "\"today\"";
+                                            } else {
+                                                $fechaActual = new DateTime();
+                                                $fechaObjeto = new DateTime($fechaInicio);
+                                                if($fechaObjeto > $fechaActual){
+                                                    echo "'" . $fechaInicio . "'";
+                                                } else {
+                                                    echo "\"today\"";
+                                                }
+                                            }?>;
 
+        var fechaMaximoPublicacion = <?php if(!isset($fechaFin) || $fechaFin === null){
+                                                echo "\"\"";
+                                            } else {
+                                                echo "'" . $fechaFin . "'";
+                                            }?>;
+
+        console.log(fechaMinimoPublicacion);
+        console.log(fechaMaximoPublicacion);
         // Función para cambiar las claves en un objeto
         function cambiarClavesEnObjeto(objeto) {
             var objetoModificado = {};
@@ -134,10 +175,11 @@
         }
 
         // Cambiar las claves en cada objeto del arreglo
-        var fechas_deshabilitadas = <?php echo $datosJson; ?>.map(cambiarClavesEnObjeto);
-
+        var fechas_deshabilitadas = arregloEnJavaScript.map(cambiarClavesEnObjeto);
+        
         flatpickr("#rangoFechas", {
-            minDate: "today",
+            minDate: fechaMinimoPublicacion,
+            maxDate: fechaMaximoPublicacion,
             mode: "range",
             disable: fechas_deshabilitadas,
             dateFormat: "Y/m/d",
@@ -162,30 +204,40 @@
             var idUsuario = document.getElementById("hidUsuario").value;
             var fechaInicio = document.getElementById("fechaInicio");
             var fechaFin = document.getElementById("fechaFin");
-                    
+            var idUsuarioPublicacion = <?php echo $id_usuario?>;
+            var usuarioHabilitado = <?php if(isset($usuarioHabilitado))
+                                            echo $usuarioHabilitado;
+                                       ?>;
+              console.log(usuarioHabilitado);      
         if(idUsuario === null  || idUsuario === undefined){
             
             window.location.href = "iniciarSesion.php";    
 
         } 
-        var parametros = {
-            "idPublicacion" : document.getElementById("hidPublicacion").value,
-            "idUsuario" : idUsuario,
-            "costo" : document.getElementById("hcosto").value,
-            "fechaInicio" : fechaInicio.value,
-            "fechaFin" : fechaFin.value
-        };
-        $.ajax({
-            data : parametros,
-            url : 'alquilar.php',
-            type : 'post',
-            beforeSend : function(){
-                $("#resultado").html("procesando");
-            },
-            success : function(response){
-                $("#resultado").html(response);
-            }
-        });
+        if(usuarioHabilitado){
+            var parametros = {
+                "idPublicacion" : document.getElementById("hidPublicacion").value,
+                "idUsuario" : idUsuario,
+                "costo" : document.getElementById("hcosto").value,
+                "fechaInicio" : fechaInicio.value,
+                "fechaFin" : fechaFin.value,
+                "idUsuarioPublicacion" : idUsuarioPublicacion
+            };
+            $.ajax({
+                data : parametros,
+                url : 'alquilar.php',
+                type : 'post',
+                beforeSend : function(){
+                    $("#resultado").html("procesando");
+                },
+                success : function(response){
+                    $("#resultado").html(response);
+                }
+            });
+
+        } else {
+            console.log("no puede alquilar su propia propiedad");
+        }
     }  
     </script>
 </head>
@@ -267,7 +319,7 @@
                     echo "<div class=\"col-md-2\">
                             <div class=\"form-check\">
                                 <input class=\"form-check-input\" type=\"checkbox\" name = \"interes[]\" id=\"flexCheckChecked\" 
-                                value = " . $fila['nombre'] . " checked>
+                                value = " . $fila['nombre'] . " checked disabled>
                                 <label class=\"form-check-label\" for=\"flexCheckChecked\">"
                                     .$fila['nombre'].
                                 "</label>
@@ -286,7 +338,7 @@
 
                 <div class="col-12 ">
                     <button type="button" class="btn btn-secondary" id="btn_submit_form_evento"
-                    onclick = "alquilar()" name = "enviar">ENVIAR</button>
+                    onclick = "alquilar()" name = "enviar" <?php echo $habilitado; ?>>ENVIAR</button>
                 </div>
               
                 

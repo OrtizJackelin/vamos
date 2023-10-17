@@ -1,3 +1,95 @@
+
+<?php
+    require_once ('sessionStart.php');
+    $valido = true;
+    $hash = "";
+    $hash_almacenado = "";
+
+
+    if (isset($_POST['enviar'])) {                
+    
+        if (isset($_POST['email'])) {
+    
+            if (filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
+                echo "La dirección de correo electrónico es válida.";
+            
+            } else {
+                echo "La dirección de correo electrónico no es válida.";
+                $valido = false;
+            }
+
+            if (isset($_POST['clave'])){
+    
+                $patron = '/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@#$%^&+=!])(?!.*\s).{8,}$/';
+
+                if (preg_match($patron, $_POST['clave'])) {
+                    echo "La contraseña cumple con los requisitos.<br>";
+                    //$hash = password_hash($_POST['clave'], PASSWORD_DEFAULT);
+
+                } else {
+                    echo "La contraseña no cumple con los requisitos.<br>";
+                    $valido = false;
+
+                }
+            }
+        }
+    }
+    
+    if (isset($_POST['enviar']) && $valido) {
+
+        try{
+            include "bd/conexion.php";
+    
+        } catch (mysqli_sql_exception $e) {
+            $mensajeError = "Error en la conexión a la base de datos: " . $e->getMessage();
+            // redirigir al cliente a una página de error personalizada o mostrar un mensaje en la página actual
+            header("Location: error.php?mensaje=" . urlencode($mensajeError));
+                
+        }
+    
+        $consulta = "SELECT id, clave, nombre, es_verificado FROM user WHERE email=? "; 
+        $sentencia = $conexion->stmt_init();
+        if(!$sentencia->prepare($consulta)){
+            echo "fallo la preparacion de la consulta <br>";
+        }
+        else{
+        
+            $sentencia->bind_param("s", $_POST['email']);
+            $sentencia->execute();
+            $resultado = $sentencia->get_result();
+            //var_dump($resultado);
+            if($fila = $resultado->fetch_array(MYSQLI_ASSOC)){
+                                        
+                // Obtener el hash almacenado en la base de datos para ese usuario
+                $hash_almacenado = $fila["clave"];
+
+                // Verificar si la contraseña ingresada es válida
+                if (password_verify($_POST['clave'], $hash_almacenado)) {
+                    $_SESSION['id'] = $fila['id'];
+                    $_SESSION['nombre'] = $fila['nombre'];
+                    $_SESSION['esVerificado'] = $fila['es_verificado'];
+                    header("Location: index.php");
+                    exit;
+                // La contraseña es válida, permitir el acceso
+                } else {
+                // La contraseña no es válida, mostrar un mensaje de error
+                    echo "contraseña incorrecta <br>";
+                }
+            
+            }
+            else{
+                echo "No se encontro resultado para la consulta";
+            // header("Location: index.php");
+                //exit;
+            }
+    
+        }                           
+        
+    
+    include "bd/cerrar_conexion.php";                
+    }         
+
+?>
 <!DOCTYPE html>
 <html lang="es">
 
@@ -17,95 +109,7 @@
             <?php include("barraDeNavegacion.php"); ?>
         </header>
 
-        <section>
-
-            <?php
-             
-                $valido = true;
-                $hash = "";
-                $hash_almacenado = "";
-
-                /*if(!isset($_SESSION['email'])){
-                    header("Location: index.php");
-                    exit;
-                }*/
-               
-                if (isset($_POST['enviar'])) {                
-                   
-                    if (isset($_POST['email'])) {
-                
-                        if (filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
-                            echo "La dirección de correo electrónico es válida.";
-                         
-                        } else {
-                            echo "La dirección de correo electrónico no es válida.";
-                            $valido = false;
-                        }
-
-                        if (isset($_POST['clave'])){
-                
-                            $patron = '/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@#$%^&+=!])(?!.*\s).{8,}$/';
-        
-                            if (preg_match($patron, $_POST['clave'])) {
-                                echo "La contraseña cumple con los requisitos.<br>";
-                                //$hash = password_hash($_POST['clave'], PASSWORD_DEFAULT);
-              
-                            } else {
-                                echo "La contraseña no cumple con los requisitos.<br>";
-                                $valido = false;
-        
-                            }
-                        }
-                    }
-                }
-                
-                if (isset($_POST['enviar']) && $valido) {
-                    include "bd/conexion.php";
-                    if ($conexion->connect_errno) {
-                        echo"error, no se conecto <br>";
-                        die("$conexion->connect_errno: $conexion->connect_errno");
-                    } else {
-                        $consulta = "SELECT id,clave FROM user WHERE email=? "; 
-                        $sentencia = $conexion->stmt_init();
-                        if(!$sentencia->prepare($consulta)){
-                            echo "fallo la preparacion de la consulta <br>";
-                        }
-                        else{
-                           
-                            $sentencia->bind_param("s", $_POST['email']);
-                            $sentencia->execute();
-                            $resultado = $sentencia->get_result();
-                            //var_dump($resultado);
-                            if($fila = $resultado->fetch_array(MYSQLI_ASSOC)){
-                                                         
-                                // Obtener el hash almacenado en la base de datos para ese usuario
-                                $hash_almacenado = $fila["clave"];
-                   
-                                // Verificar si la contraseña ingresada es válida
-                                if (password_verify($_POST['clave'], $hash_almacenado)) {
-                                    $_SESSION['id'] = $fila["id"];
-                                    header("Location: index.php");
-                                    exit;
-                                // La contraseña es válida, permitir el acceso
-                                } else {
-                                // La contraseña no es válida, mostrar un mensaje de error
-                                    echo "contraseña incorrecta <br>";
-                                }
-                            
-                            }
-                            else{
-                                echo "No se encontro resultado para la consulta";
-                               // header("Location: index.php");
-                                //exit;
-                            }
-                      
-                        }                           
-                        
-                    }
-                    include "bd/cerrar_conexion.php";                
-                }         
-          
-            ?>
+        <section  class = "sectionPrincipal">
 
             <div class="container w-75 ">
 
@@ -133,8 +137,7 @@
                 </form><br>
             </div>
         </section>
-        <?php //} ?>
-
+ 
         <!--FOOTER-->
         <footer>
             <?php include("../static/html/footer.html"); ?>

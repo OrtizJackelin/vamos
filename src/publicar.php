@@ -1,6 +1,12 @@
 <?php
     require_once ('sessionStart.php');
 
+    if(!isset($_SESSION['id'])){
+        header("Location: index.php");
+        exit;
+        var_dump($_SESSION);
+    }
+
     $valido = true;
     $textoErrorTitulo = "";
     $textoError = "";
@@ -20,204 +26,212 @@
             
     }
 
-    var_dump($_SESSION['esVerificado']);
-    if($_SESSION['esVerificado'] === 0){
-        $consulta = "SELECT estado
-                    FROM publicacion
-                    WHERE id_usuario = ? AND id = (SELECT MAX(id) FROM publicacion WHERE id_usuario = ?)";
+    $consulta = "SELECT id, nombre
+    FROM servicio";        
+    $sentencia = $conexion->stmt_init();
 
-        $sentencia = $conexion->stmt_init();
-        if(!$sentencia->prepare($consulta)){
-            $mensaje = $mensaje. " fallo la preparación de la consula. <br>";
-        } else {
-            $sentencia->bind_param("ss", $_SESSION['id'], $_SESSION['id']);
-            $sentencia->execute();
-            $resultado = $sentencia->get_result();
-            if($resultado->num_rows >0){
-                if($dato=$resultado->fetch_row()){
-                    if($dato[0]===2){
-                        $mensaje = $mensaje. " ultima solicitud rechazada. <br>";
-                    } else {
-                        $mensaje = $mensaje. "Usted ya posee una publicación ó una solicitud en proceso.<br>
-                                            Si desea más beneficios en su cuenta deberá solicitar la certificación
-                                            de la misma";
-                        $puedePublicar = false;
-                    }
-                }  
-            }
-        }
+    if(!$sentencia->prepare($consulta)){
+        $mensaje = $mensaje. " fallo la preparacion de la consulta para buscar lista de servicios <br>";
+    }
+    else{
+        $sentencia->execute();
+        $resultadoServicio = $sentencia->get_result();
+        $sentencia->close();
     }
 
+   // var_dump($_SESSION['esVerificado']);
+   if(isset($_SESSION['esVerificado'])){
 
-    if($puedePublicar){
-        $consulta = "SELECT id, nombre
-        FROM servicio";        
-        $sentencia = $conexion->stmt_init();
-
-        if(!$sentencia->prepare($consulta)){
-            $mensaje = $mensaje. " fallo la preparacion de la consulta para buscar lista de servicios <br>";
-        }
-        else{
-            $sentencia->execute();
-            $resultadoServicio = $sentencia->get_result();
-            $sentencia->close();
-        }
-
-        if (isset($_POST['enviar'])){
-
-
-            if (isset($_POST['titulo']) && empty($_POST['titulo'])){
-            
-                $mensaje = $mensaje. "Debe ingresar un titulo";
-                $valido = false;
-            }
-
-
-            if (isset($_POST['ubicacion']) && empty($_POST['ubicacion'])){
-                $mensaje = $mensaje. "Debe ingresar una ubicacion";
-                $valido = false;                    
-            }
-
-            if (isset($_POST['decripcion']) && empty($_POST['descripcion'])){
-                $mensaje = $mensaje. "Debe ingresar una ubicacion";
-                $valido = false;                    
-            }
-
-            if (isset($_POST['costo']) && empty($_POST['costo'])){
-                $mensaje = $mensaje. "Debe ingresar un costo";
-                $valido = false;                    
-            }
-
-            if (isset($_POST['cupo']) && empty($_POST['cupo'])){
-                $mensaje = $mensaje. "Debe ingresar un cupo";
-                $valido = false;                    
-            }
-
-            if (isset($_POST['tiempo_minimo_permanencia']) && empty($_POST['tiempo_minimo_permanencia'])){
-                $_POST['tiempo_minimo_permanencia'] = null;               
-            }
-            
-            if (isset($_POST['tiempo_maximo_permanencia']) && empty($_POST['tiempo_maximo_permanencia'])){
-                $_POST['tiempo_maximo_permanencia'] = null;               
-            }
-
-            if (isset($_POST['fecha_fin']) && empty($_POST['fecha_fin'])){
-                $_POST['fecha_fin']= null;               
-            }
-            
-            if (isset($_POST['fecha_inicio']) && empty($_POST['fecha_inicio'])){
-                $_POST['fecha_inicio']= null;              
-            }
-
-            
-        }
-
-        if (isset($_POST['enviar']) && $valido){
-            
-            $consulta = "INSERT INTO  publicacion (titulo, descripcion, ubicacion, costo, 
-            cupo, tiempo_minimo, tiempo_maximo, fecha_inicio_publicacion, fecha_fin_publicacion, id_usuario, estado)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?,?, 1) ";
+        if($_SESSION['esVerificado'] === 0){
+            $consulta = "SELECT estado
+                        FROM publicacion
+                        WHERE id_usuario = ? AND id = (SELECT MAX(id) FROM publicacion WHERE id_usuario = ?)";
 
             $sentencia = $conexion->stmt_init();
-
-            if(!$sentencia->prepare($consulta)) {
-                $mensaje = $mensaje. "fallo la preparacion de la consulta para guardar datos de publicación <br>";
-            } else{
-                $sentencia->bind_param("ssssssssss", $_POST['titulo'], $_POST['descripcion'], $_POST['ubicacion'], 
-                $_POST['costo'], $_POST['cupo'], $_POST['tiempo_minimo'], $_POST['tiempo_maximo'], 
-                $_POST['fecha_inicio'], $_POST['fecha_fin'], $_SESSION['id']);
-
+            if(!$sentencia->prepare($consulta)){
+                $mensaje = $mensaje. " fallo la preparación de la consula. <br>";
+            } else {
+                $sentencia->bind_param("ss", $_SESSION['id'], $_SESSION['id']);
                 $sentencia->execute();
-                
-                if($sentencia->affected_rows > 0){
-                    unset($_SESSION['email']);
-                    $id_publicacion = $sentencia->insert_id;
-                    $sentencia->close();     
-                                
-                    $rutaDestino = $directorioDestino . $id_publicacion . "/";
-
-                    if (!file_exists($rutaDestino )) {
-                        if (!mkdir($rutaDestino )) {
-                            $mensaje = $mensaje. "Error al crear la carpeta '$rutaDestino '.";
-                        } 
-                    }    
-                    //var_dump($_FILES["imagenes"]);
-                    if (file_exists($rutaDestino) &&  isset($_FILES["imagenes"]) && is_array($_FILES["imagenes"]["name"])) {
-                        $totalArchivos = count($_FILES["imagenes"]["name"]);
-                        
-                        for ($i = 0; $i < $totalArchivos; $i++) {
-                            $nombreArchivo = $_FILES["imagenes"]["name"][$i];
-                            $tipoArchivo = $_FILES["imagenes"]["type"][$i];
-                            $tamanoArchivo = $_FILES["imagenes"]["size"][$i];
-                            $archivoTmpName = $_FILES["imagenes"]["tmp_name"][$i];
-                            $errorArchivo = $_FILES["imagenes"]["error"][$i];
-                            if ($errorArchivo === UPLOAD_ERR_OK) {
-
-                                // Mover el archivo temporal al destino deseado
-                                // Cambia esta ruta a la carpeta donde deseas guardar los archivos
-                                $rutaArchivo = $rutaDestino . $nombreArchivo;
-                        
-                                if (move_uploaded_file($archivoTmpName, $rutaArchivo)) {
-                                    $mensaje = $mensaje. "El archivo se subió correctamente a: " . $rutaArchivo;
-
-                                    $consulta = "INSERT INTO imagen(ruta, id_publicacion)
-                                    VALUES (?, ?) ";
-                
-                                    $sentencia = $conexion->stmt_init();
-                
-                                    if(!$sentencia->prepare($consulta)) {
-                                        $mensaje = $mensaje. " fallo la preparacion de la consulta para 
-                                                    guardar ruta de carpeta de imagenes <br>";
-                                    } else{
-                                        $sentencia->bind_param("ss", $nombreArchivo, $id_publicacion);
-                
-                                        $sentencia->execute();
-                                        if($sentencia->affected_rows <= 0) {
-                                            $mensaje = $mensaje." error guardando imagen<br>"; 
-                                        }
-                                        $sentencia->close(); 
-                                    }
-
-                                } else {
-                                    $mensaje = $mensaje. " Hubo un error al mover el archivo.<br>";
-                                }
-                            } else {
-                                //echo "Error al subir el archivo. Código de error: " . $errorArchivo;
-                            }
-                        }  
+                $resultado = $sentencia->get_result();
+                if($resultado->num_rows >0){
+                    if($dato=$resultado->fetch_row()){
+                        if($dato[0]===2){
+                            $mensaje = $mensaje. " ultima solicitud rechazada. <br>";
+                        } else {
+                            $mensaje = $mensaje. "Usted ya posee una publicación ó una solicitud en proceso.<br>
+                                                Si desea más beneficios en su cuenta deberá solicitar la certificación
+                                                de la misma";
+                            $puedePublicar = false;
+                        }
                     }  
-                    if (isset($_POST['servicio'])){
-                        foreach($_POST['servicio'] as $id_servicio){
-                        
-                            $consulta = "INSERT INTO  servicio_publicacion(id_publicacion, id_servicio)
-                            VALUES (?, ?) ";
-
-                            $sentencia = $conexion->stmt_init();
-
-                            if(!$sentencia->prepare($consulta)) {
-                                $mensaje = $mensaje. " fallo la preparacion de la consulta para guardar servicios seleccionados <br>";
-                            } else{
-                                $sentencia->bind_param("ss",$id_publicacion, $id_servicio);
-
-                                $sentencia->execute();
-                                
-                                if($sentencia->affected_rows <= 0) {
-                                    echo"error guardando imagen<br>"; 
-                                }
-                                $sentencia->close();   
-                            }                 
-                        }  
-                     
-                    }                    
-                }else{
-                    $mensaje = $mensaje." error guardando datos de la publicación.<br>"; // ver aqi 
                 }
-            }                              
-        } 
-    } else {
-        $mensaje = $mensaje . "no puede realizar la publicación porque ya tiene una ";
-        $valido = false;
-    }
+            }
+        }
+
+
+        if($puedePublicar){
+
+
+            if (isset($_POST['enviar'])){
+
+
+                if (isset($_POST['titulo']) && empty($_POST['titulo'])){
+                
+                    $mensaje = $mensaje. "Debe ingresar un titulo";
+                    $valido = false;
+                }
+
+
+                if (isset($_POST['ubicacion']) && empty($_POST['ubicacion'])){
+                    $mensaje = $mensaje. "Debe ingresar una ubicacion";
+                    $valido = false;                    
+                }
+
+                if (isset($_POST['decripcion']) && empty($_POST['descripcion'])){
+                    $mensaje = $mensaje. "Debe ingresar una ubicacion";
+                    $valido = false;                    
+                }
+
+                if (isset($_POST['costo']) && empty($_POST['costo'])){
+                    $mensaje = $mensaje. "Debe ingresar un costo";
+                    $valido = false;                    
+                }
+
+                if (isset($_POST['cupo']) && empty($_POST['cupo'])){
+                    $mensaje = $mensaje. "Debe ingresar un cupo";
+                    $valido = false;                    
+                }
+
+                if (isset($_POST['tiempo_minimo_permanencia']) && empty($_POST['tiempo_minimo_permanencia'])){
+                    $_POST['tiempo_minimo_permanencia'] = null;               
+                }
+                
+                if (isset($_POST['tiempo_maximo_permanencia']) && empty($_POST['tiempo_maximo_permanencia'])){
+                    $_POST['tiempo_maximo_permanencia'] = null;               
+                }
+
+                if (isset($_POST['fecha_fin']) && empty($_POST['fecha_fin'])){
+                    $_POST['fecha_fin']= null;               
+                }
+                
+                if (isset($_POST['fecha_inicio']) && empty($_POST['fecha_inicio'])){
+                    $_POST['fecha_inicio']= null;              
+                }
+
+                
+            }
+
+            if (isset($_POST['enviar']) && $valido){
+                
+                $consulta = "INSERT INTO  publicacion (titulo, descripcion, ubicacion, costo, 
+                cupo, tiempo_minimo, tiempo_maximo, fecha_inicio_publicacion, fecha_fin_publicacion, id_usuario, estado)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?,?, 1) ";
+
+                $sentencia = $conexion->stmt_init();
+
+                if(!$sentencia->prepare($consulta)) {
+                    $mensaje = $mensaje. "fallo la preparacion de la consulta para guardar datos de publicación <br>";
+                } else{
+                    $sentencia->bind_param("ssssssssss", $_POST['titulo'], $_POST['descripcion'], $_POST['ubicacion'], 
+                    $_POST['costo'], $_POST['cupo'], $_POST['tiempo_minimo'], $_POST['tiempo_maximo'], 
+                    $_POST['fecha_inicio'], $_POST['fecha_fin'], $_SESSION['id']);
+
+                    $sentencia->execute();
+                    
+                    if($sentencia->affected_rows > 0){
+                        unset($_SESSION['email']);
+                        $id_publicacion = $sentencia->insert_id;
+                        $sentencia->close();     
+                                    
+                        $rutaDestino = $directorioDestino . $id_publicacion . "/";
+
+                        if (!file_exists($rutaDestino )) {
+                            if (!mkdir($rutaDestino )) {
+                                $mensaje = $mensaje. "Error al crear la carpeta '$rutaDestino '.";
+                            } 
+                        }    
+                        //var_dump($_FILES["imagenes"]);
+                        if (file_exists($rutaDestino) &&  isset($_FILES["imagenes"]) && is_array($_FILES["imagenes"]["name"])) {
+                            $totalArchivos = count($_FILES["imagenes"]["name"]);
+                            
+                            for ($i = 0; $i < $totalArchivos; $i++) {
+                                $nombreArchivo = $_FILES["imagenes"]["name"][$i];
+                                $tipoArchivo = $_FILES["imagenes"]["type"][$i];
+                                $tamanoArchivo = $_FILES["imagenes"]["size"][$i];
+                                $archivoTmpName = $_FILES["imagenes"]["tmp_name"][$i];
+                                $errorArchivo = $_FILES["imagenes"]["error"][$i];
+                                if ($errorArchivo === UPLOAD_ERR_OK) {
+
+                                    // Mover el archivo temporal al destino deseado
+                                    // Cambia esta ruta a la carpeta donde deseas guardar los archivos
+                                    $rutaArchivo = $rutaDestino . $nombreArchivo;
+                            
+                                    if (move_uploaded_file($archivoTmpName, $rutaArchivo)) {
+                                        $mensaje = $mensaje. "El archivo se subió correctamente a: " . $rutaArchivo;
+
+                                        $consulta = "INSERT INTO imagen(ruta, id_publicacion)
+                                        VALUES (?, ?) ";
+                    
+                                        $sentencia = $conexion->stmt_init();
+                    
+                                        if(!$sentencia->prepare($consulta)) {
+                                            $mensaje = $mensaje. " fallo la preparacion de la consulta para 
+                                                        guardar ruta de carpeta de imagenes <br>";
+                                        } else{
+                                            $sentencia->bind_param("ss", $nombreArchivo, $id_publicacion);
+                    
+                                            $sentencia->execute();
+                                            if($sentencia->affected_rows <= 0) {
+                                                $mensaje = $mensaje." error guardando imagen<br>"; 
+                                            }
+                                            $sentencia->close(); 
+                                        }
+
+                                    } else {
+                                        $mensaje = $mensaje. " Hubo un error al mover el archivo.<br>";
+                                    }
+                                } else {
+                                    //echo "Error al subir el archivo. Código de error: " . $errorArchivo;
+                                }
+                            }  
+                        }  
+                        if (isset($_POST['servicio'])){
+                            foreach($_POST['servicio'] as $id_servicio){
+                            
+                                $consulta = "INSERT INTO  servicio_publicacion(id_publicacion, id_servicio)
+                                VALUES (?, ?) ";
+
+                                $sentencia = $conexion->stmt_init();
+
+                                if(!$sentencia->prepare($consulta)) {
+                                    $mensaje = $mensaje. " fallo la preparacion de la consulta para guardar servicios seleccionados <br>";
+                                } else{
+                                    $sentencia->bind_param("ss",$id_publicacion, $id_servicio);
+
+                                    $sentencia->execute();
+                                    
+                                    if($sentencia->affected_rows <= 0) {
+                                        echo"error guardando imagen<br>"; 
+                                    }
+                                    $sentencia->close();   
+                                }                 
+                            }  
+                        
+                        }                    
+                    }else{
+                        $mensaje = $mensaje." error guardando datos de la publicación.<br>"; // ver aqi 
+                    }
+                }                              
+            } 
+        } else {
+            $mensaje = $mensaje . "no puede realizar la publicación porque ya tiene una ";
+            $valido = false;
+        }
+   } else {
+        $mensaje = $mensaje . " Debe logearse para crear una publicación. <br>";
+        $puedePublicar = false;
+   }
 
     include "bd/cerrar_conexion.php";
 ?>
@@ -231,9 +245,9 @@
         <link rel="stylesheet" href="../static/css/style.css" type="text/css">
         <link rel="stylesheet" href="../static/css/style2.css" type="text/css">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
-            integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+        <link rel="stylesheet" href="../static/css/bootstrap-icons.css">
+        <link href="../static/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     </head>
 
     <body>

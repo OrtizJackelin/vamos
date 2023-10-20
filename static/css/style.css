@@ -9,6 +9,8 @@ html,body {
     margin: 0; /* Elimina el margen exterior */
     padding: 0; /* Elimina el espacio interno */
     border: 0; /* Elimina los bordes */
+    background-color: blueviolet;
+    color: brown;
     
 }
 

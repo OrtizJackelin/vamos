@@ -1,8 +1,9 @@
 <?php  
+    require_once('sessionStart.php'); 
         
     if(!isset($_SESSION['email'])){
-        header("Location: validarCorreo.php");
-        exit;
+       header("Location: validarCorreo.php");
+       exit;
     }
 
     $valido = true;
@@ -183,7 +184,8 @@
                
                 <div class="col-md-4">
                     <label for="email" class="form-label">Email</label>
-                    <input type="email" class="form-control" id="email" name = "email" value = "<?php echo $_SESSION['email']; ?>" readonly>
+                    <input type="email" class="form-control" id="email" name = "email" 
+                    value = "<?php if (isset($_SESSION['email']))echo $_SESSION['email']; ?>" readonly>
                 </div>
 
                 <div class="col-md-4">

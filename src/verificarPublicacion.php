@@ -22,40 +22,22 @@
     //var_dump($_POST);
     extract($_POST);
 
-        $consulta = "UPDATE solicitud_verificacion
+        $consulta = "UPDATE publicacion
                 SET estado = ?, fecha_revision = CURRENT_TIMESTAMP()
                 WHERE id = ?";
     $sentencia = $conexion->stmt_init();
     if(!$sentencia->prepare($consulta)){
-        echo "error preparando la consulta para insertar datos ";
+        echo "Error preparando la consulta para insertar datos ";
     } else{
         $sentencia ->bind_param("ss", $estado,  $id );
         $sentencia->execute();
 
         if($sentencia->affected_rows <= 0) {
-            echo "error guardando <br>";     
+            echo "Error guardando <br>";     
         }
         $sentencia->close();   
-        echo "solicitud actualizada con éxito en bd verificacion de solicitudes";
+        echo "Solicitud actualizada con éxito en bd verificacion de solicitudes";
     }  
-
-    $consulta = "UPDATE user
-    SET es_verificado = ?, documento_verificado = ?
-    WHERE id = ?";
-    $sentencia = $conexion->stmt_init();
-    if(!$sentencia->prepare($consulta)){
-        echo "error preparando la consulta para insertar datos ";
-    } else {
-        $sentencia ->bind_param("sss", $estado, $documento, $idUsuario );
-        $sentencia->execute();
-
-        if($sentencia->affected_rows <= 0) {
-            echo "error guardando <br>";     
-        }
-        $sentencia->close();   
-        echo "solicitud actualizada con éxito en bd user";  
-        
-    }
-    
+   
     include "bd/cerrar_conexion.php";      
 ?>

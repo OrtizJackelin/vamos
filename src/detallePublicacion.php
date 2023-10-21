@@ -2,12 +2,6 @@
 <?php
     require_once ('sessionStart.php');
 
-    if(!isset($_SESSION['id'])){
-        header("Location: index.php");
-        exit;
-        var_dump($_SESSION);
-    }
-
     $mensaje = "";
 
 
@@ -299,53 +293,79 @@
             <form class="row g-3 " id="formulario" method="post" action="publicar.php"  enctype="multipart/form-data">
                 
                 <div class="col-md-12">
-                    <label"><?php echo $descripcion ?></label>                        
+                    <label"><b><?php echo $titulo ?></b></label>                        
                 </div> 
 
-                <div class="col-md-12">
+                <div class="col-md-6">
+                    <label"><b>Descripci&oacute;n: </b><?php echo $descripcion ?></label>                        
+                </div> 
+
+                <div class="col-md-6">
                     <label"><b>Ubicaci&oacute;n: </b><?php echo $ubicacion ?></label>                        
                 </div>  
-                <div class="col-md-12">
+                <div class="col-md-6">
                     <label"> <b>Disponible :</b> 
                     desde el <?php echo date("d/m/Y", strtotime($fecha_inicio_publicacion));?> 
                     al <?php echo date("d/m/Y", strtotime($fecha_fin_publicacion)) ?></label>                        
                 </div> 
 
-                <div class="col-md-12">
+                <div class="col-md-6">
                     <label"><b>Cantidad de personas permitidas: </b><?php echo $cupo ?></label>                        
                 </div> 
 
-                <div class="col-md-12">
+                <div class="col-md-6">
                     <label"><b>Costo por d&iacute;a: </b><?php echo $costo ?></label>                        
                 </div>            
 
-                <p><b>Servicios que ofrece el lugar: </b></p>
-                
-                <?php                  
-                    while($fila = $resultadoServicios->fetch_array(MYSQLI_ASSOC)){
-                    echo "<div class=\"col-md-2\">
-                            <div class=\"form-check\">
-                                <input class=\"form-check-input\" type=\"checkbox\" name = \"interes[]\" id=\"flexCheckChecked\" 
-                                value = " . $fila['nombre'] . " checked disabled>
-                                <label class=\"form-check-label\" for=\"flexCheckChecked\">"
-                                    .$fila['nombre'].
-                                "</label>
-                            </div>                        
-                        </div>";
-                    }
-                ?> 
+                <div class = "col-md-6">
+                    <p><b>Servicios que ofrece el lugar: </b></p>                    
+                    <?php                  
+                        while($fila = $resultadoServicios->fetch_array(MYSQLI_ASSOC)){
+                        echo "<div class=\"col-md-2\">
+                                <div class=\"form-check\">
+                                    <input class=\"form-check-input\" type=\"checkbox\" name = \"interes[]\" id=\"flexCheckChecked\" 
+                                    value = " . $fila['nombre'] . " checked disabled>
+                                    <label class=\"form-check-label\" for=\"flexCheckChecked\">"
+                                        .$fila['nombre'].
+                                    "</label>
+                                </div>                        
+                            </div>";
+                        }
+                    ?> 
+                </div>
                 
                 <p><br><b>Reserve: </b></p>
-                        
-                <div class="col-md-4">
-                    <label for="rangoFechas" class="form-label"><b>Seleccione Rango De Fecha: </b></label>
-                    <input type="text" class="form-control" id="rangoFechas" name= "rangoFechas" 
-                    min="16" max="150" required>
-                </div>
+                <div class="col-md-4" style="border: 1px solid #000;">
+                    <div class = "row">
+                        <div class="col-md-4">
+                            <label for="rangoFechas" class="form-label"><b>Seleccione Rango De Fecha: </b></label>
+                            <input type="text" class="form-control" id="rangoFechas" name= "rangoFechas" 
+                            min="16" max="130" required>
+                        </div>
+                    </div>
 
-                <div class="col-12 ">
-                    <button type="button" class="btn btn-secondary" id="btn_submit_form_evento"
-                    onclick = "alquilar()" name = "enviar" <?php echo $habilitado; ?>>ENVIAR</button>
+                    <div class = "row">
+                        <div class="col-md-4">
+                            <label for="cantidadPersonas" class="form-label"><b>Cantidad de Personas: </b></label>
+                            <input type="text" class="form-control" id="cantidadPersonas" name= "cantidadPersonas" 
+                            min="16" max="130" required>
+                        </div>
+                    </div>
+
+                    <div class = "row">
+                        <div class="col-md-4">
+                            <label for="montoTotal" class="form-label"><b>Monto Total: </b></label>
+                            <input type="text" class="form-control" id="montoTotal" name= "montoTotal" 
+                            min="16" max="130" required>
+                        </div>
+                    </div>
+
+                    <div class = "row">
+                        <div class="col-md-4 ">
+                            <button type="button" class="btn btn-secondary" id="btn_submit_form_evento"
+                            onclick = "alquilar()" name = "enviar" <?php echo $habilitado; ?>>ENVIAR</button>
+                        </div>
+                    </div>
                 </div>
               
                 

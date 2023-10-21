@@ -31,7 +31,7 @@
                     $valido = false;
 
                 }
-            }
+            } 
         }
     }
     
@@ -47,7 +47,10 @@
                 
         }
     
-        $consulta = "SELECT id, clave, nombre, es_verificado FROM user WHERE email=? "; 
+        $consulta = "SELECT id, clave, nombre, es_verificado, es_administrador
+                    FROM user
+                    WHERE email=?"; 
+
         $sentencia = $conexion->stmt_init();
         if(!$sentencia->prepare($consulta)){
             echo "fallo la preparacion de la consulta <br>";
@@ -57,37 +60,90 @@
             $sentencia->bind_param("s", $_POST['email']);
             $sentencia->execute();
             $resultado = $sentencia->get_result();
+            $sentencia->close();
             //var_dump($resultado);
             if($fila = $resultado->fetch_array(MYSQLI_ASSOC)){
-                                        
+                var_dump($fila['es_administrador']);                
                 // Obtener el hash almacenado en la base de datos para ese usuario
                 $hash_almacenado = $fila["clave"];
 
                 // Verificar si la contraseña ingresada es válida
                 if (password_verify($_POST['clave'], $hash_almacenado)) {
+                   
                     $_SESSION['id'] = $fila['id'];
                     $_SESSION['nombre'] = $fila['nombre'];
-                    $_SESSION['esVerificado'] = $fila['es_verificado'];
+                    $_SESSION['esVerificado'] = $fila['es_verificado']; 
+                    $_SESSION['esAdministrador'] = $fila['es_administrador']; 
+                    // La contraseña es válida, permitir el acceso
+                
+                    if($fila['es_verificado'] == 1){
+                        $consulta = "SELECT fecha_vencimiento 
+                        FROM verificacion_cuenta 
+                        WHERE estado = 1 
+                        AND id_usuario = ? 
+                        AND id = (SELECT MAX(id) 
+                                FROM verificacion_cuenta 
+                                WHERE id_usuario = ?)";
+
+                        $sentencia = $conexion->stmt_init();
+                        if(!$sentencia->prepare($consulta)){
+                            echo "fallo la prepracion de la consuta para traer fecha de vencimiento.<br>";
+                        } else {
+                            $sentencia->bind_param("ss", $fila['id'], $fila['id']);
+                            $sentencia->execute();
+                            $resultadoFechaVencimiento = $sentencia->get_result();
+                            $sentencia->close();
+                            if($fecha = $resultadoFechaVencimiento->fetch_assoc()){
+                                if($fecha['fecha_vencimiento']!=NULL){
+                                    $fechaActual = date("Y-m-d");
+                                    if($fechaActual > $fecha['fecha_vencimiento']){
+                                        $consulta = "UPDATE user
+                                                    SET es_verificado = 0
+                                                    WHERE id = ?";
+                                        $sentencia = $conexion->stmt_init();
+                                        if(!$sentencia->prepare($consulta)){
+                                            echo "No se preparo la consulta para actualizar el es_verificado del usuario";
+                                        } else {
+                                            $sentencia->bind_param("s", $fila['id']);
+                                            $sentencia->execute();
+                                            if($sentecia->affected_rows > 0){
+                                                $_SESSION['esVerificado'] = 0;
+                                            } else {
+                                                echo "no se realizo cambios es la variables es_verificado";
+                                            }
+                                            $sentencia->close();
+                                        }
+                                    } else {
+                                        echo "La fecha actual es menor o igual a la fecha de vencimiento.<br>";
+                                    }
+
+                                } else {
+                                    echo"No se establecio una fecha de vencimiento para la verificacion de la cuenta, fecha null.<br>";
+                                }
+                            } else {
+                                echo "No se encontro resultado de la consulta para traer fecha de vencimiento";
+                            }
+                        }
+                    } else {
+                        echo "Usuario no esta verificado.<br>";
+                    }
+
                     header("Location: index.php");
                     exit;
-                // La contraseña es válida, permitir el acceso
+            
                 } else {
                 // La contraseña no es válida, mostrar un mensaje de error
                     echo "contraseña incorrecta <br>";
                 }
-            
+
             }
             else{
                 echo "No se encontro resultado para la consulta";
-            // header("Location: index.php");
-                //exit;
             }
-    
-        }                           
-        
-    
-    include "bd/cerrar_conexion.php";                
-    }         
+        }   
+        include "bd/cerrar_conexion.php";  
+    }  
+         
 
 ?>
 <!DOCTYPE html>

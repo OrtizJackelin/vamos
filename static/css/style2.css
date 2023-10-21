@@ -3,12 +3,13 @@
     
 }
 
-body {
+/*body {
     font-family: 'Roboto', sans-serif;
     display:flex; 
     flex-direction:column;
     height:100%;
-}
+
+}*/
 
 /* NAV */
 .nav-link {
@@ -20,6 +21,7 @@ body {
     color: white;
 }
 
+#btnCard,
 #botonFiltro,
 #a_inscribirme {
     color: white;

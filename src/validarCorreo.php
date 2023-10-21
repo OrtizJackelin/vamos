@@ -1,32 +1,27 @@
 <?php
     require_once ('sessionStart.php');
-    unset($_SESSION['email']);
-    unset($_SESSION['nombre']);
 
     $valido = true;
     $mensaje = "";
 
+    try{
+        include "bd/conexion.php";
+
+    } catch(mysqli_sql_exception $e){
+        $mensajeError = "Error en la conexión a la base de datos: " . $e->getMessage();
+        // redirigir al cliente a una página de error personalizada o mostrar un mensaje en la página actual
+        header("Location: error.php?mensaje=" . urlencode($mensajeError));
+    }
+
     if (isset($_POST['enviar'])) {
-
         if (isset($_POST['email'])) {
-    
             if (!filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
-
                 $mensaje =  $mensaje." La dirección de correo electrónico tiene un formato inválido.<br>";
                 $valido = false;
             } 
-    
-        }                
+        }              
+        echo "entro a enviar";
 
-        try{
-            include "bd/conexion.php";
-
-        } catch(mysqli_sql_exception $e){
-            $mensajeError = "Error en la conexión a la base de datos: " . $e->getMessage();
-            // redirigir al cliente a una página de error personalizada o mostrar un mensaje en la página actual
-            header("Location: error.php?mensaje=" . urlencode($mensajeError));
-        }
-    
         $consulta = "SELECT email from user where email = ?";
         $sentencia = $conexion->stmt_init();
         
@@ -34,17 +29,14 @@
             echo "fallo la preparacion de la consulta.<br>";
             $mensaje =  $mensaje." Fallo la preparacion de la consulta.<br>";
             $valido = false;
-            
-            
         } else {
             $sentencia->bind_param("s",$_POST['email']);
             $sentencia->execute();
             $resultado = $sentencia->get_result();
-            //echo"entro en la conslta";
+            echo"entro en la conslta";
             if ($resultado->num_rows > 0) {
                 $mensaje =  $mensaje." Correo ya existe<br>";
-                $valido = false;
-                
+                $valido = false;  
             } else {                   
                 $_SESSION['email'] = $_POST['email'];
                 header("Location: resgistroDeUsuario.php");

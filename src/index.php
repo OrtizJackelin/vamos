@@ -123,7 +123,9 @@
                             <p class="card-text"> Ubicación: <?php echo $publicacion['ubicacion'] ?> </p>
                             <p class="card-text"> Disponible: <?php echo $publicacion['fecha_inicio_publicacion'] . " al " . $publicacion['fecha_fin_publicacion'] ?> </p>
                             <p class="card-text"> Costo: <?php echo $publicacion['costo'] ?> </p>
-                            <p><a href="detallePublicacion.php?id=<?php echo $publicacion['id'] ?> " class = "buttom" >Ir a publicaci&oacute;n</a> </p>
+                            <a href="detallePublicacion.php?id=<?php echo $publicacion['id'] ?> "
+                            class = "btn" id = "btnCard" >Ir a publicaci&oacute;n
+                            </a>                     
                         </div>
                     </div>
                         

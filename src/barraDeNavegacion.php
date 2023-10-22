@@ -20,12 +20,6 @@ if($_SERVER['PHP_SELF']!="/Practicos/ProyectoProgramacionIII/src/resgistroDeUsua
             <p style = " font-weight: bold; font-size:12px; color:#7e7e7e;padding:0px; 
             margin:0!important;"><?php if (isset($_SESSION['id'])) echo "Hola " . $_SESSION['nombre'];?></p>
         </div>
-        <div style="display: flex; justify-content: flex-end;">
-            <a style="text-decoration:none; padding:0px; border-radius:0px; " class=""
-                href="../src/index.php">
-                <img src="../static/imagenes/redes/house.svg" alt="home" title = "home">
-            </a>            
-        </div>
 
         <div class="btn-group " style="margin-right:60px;">
             <?php if (isset($_SESSION['id'])) {  ?>

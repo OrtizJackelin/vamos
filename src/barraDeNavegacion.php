@@ -57,6 +57,7 @@ if($_SERVER['PHP_SELF']!="/Practicos/ProyectoProgramacionIII/src/resgistroDeUsua
                     if(isset($_SESSION['esAdministrador']) && $_SESSION['esAdministrador'] == 1 ){
                     ?>
                         <li><a class="dropdown-item" href="../src/miPerfil.php">Mi perfil</a></li>
+                        <li><a class="dropdown-item" href="../src/misActividades.php">Mis Actividades</a></li>
                         <li><a class="dropdown-item" href="../src/solicitarVerificarCuenta.php">Verificar Cuenta</a></li>
                         <li><a class="dropdown-item" href="../src/publicar.php">Publicar</a></li>
                         <li><a class="dropdown-item" href="../src/administrador.php">Solicitudes</a></li>
@@ -65,6 +66,7 @@ if($_SERVER['PHP_SELF']!="/Practicos/ProyectoProgramacionIII/src/resgistroDeUsua
                     } else {
                     ?>
                         <li><a class="dropdown-item" href="../src/miPerfil.php">Mi perfil</a></li>
+                        <li><a class="dropdown-item" href="../src/misActividades.php">Mis Actividades</a></li>
                         <li><a class="dropdown-item" href="../src/solicitarVerificarCuenta.php">Verificar Cuenta</a></li>
                         <li><a class="dropdown-item" href="../src/publicar.php">Publicar</a></li>
                         <li><a class="dropdown-item" href="../src/cerrarSesion.php">Cerrar sesión</a></li>

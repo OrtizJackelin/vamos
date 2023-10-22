@@ -128,15 +128,11 @@ footer {
     display: flex;
     flex-direction: row;
     justify-content: space-around;
-   /* position: absolute;
-    bottom: 0;
-    width: 100%;*/
 }
 
 footer p {
     padding: 2%;
     color: antiquewhite;
-    color:grey
 }
 
 footer a {

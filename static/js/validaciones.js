@@ -47,8 +47,8 @@ function validarInputs(event){
     if(event.target.id==='fechaNacimiento'){
         resultado= validarFechaNacimiento(event.target.value);
     }
-    if(event.target.id==='codPais'){
-        resultado= validarCodigoPais(event.target.value);
+    if(event.target.id==='dni'){
+        resultado= validarDni(event.target.value);
     }
     if(event.target.id==='telefono'){
         resultado= validarTelefono(event.target.value);
@@ -136,13 +136,14 @@ function validarFechaNacimiento(fechaNacimiento) {
     return true; // Permite que el formulario se envíe si la fecha es válid
 }
 
-function validarCodigoPais(codPais){
-    if(codPais===""){
-        alert("Debe seleccionar un codigo.");
+function validarDni(dni){
+    if(dni===""){
+        alert("Debe ingresar dni.");
         return false;
         
     } else{
-        return true;
+        const regex = /^[1-9]\d{4,7}$/;
+        return regex.test(dni);
     }
 }
 
@@ -152,7 +153,7 @@ function validarTelefono(telefono){
         alert("Debe ingresar un numero de telefono.");
         return false;
     } else{
-        var regexTelefono = /^(\d{10})$/;
+        const regex = /^\d{10}$/;
         return regex.test(telefono);
     }
 }    

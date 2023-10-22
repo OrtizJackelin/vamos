@@ -191,14 +191,64 @@
                 if (selectedDates.length > 1) {
                     document.getElementById("fechaInicio").value = partes[0];
                     document.getElementById("fechaFin").value = partes[1];
+                    
+                    // Obtener los valores de las fechas desde los campos de entrada
+                    var fechainicioStr = partes[0];
+                    var fechaFinStr = partes[1];
+                    
+                    // Convertir las fechas de texto a objetos Date
+                    var fecha1 = new Date(fechainicioStr);
+                    var fecha2 = new Date(fechaFinStr);
+                    
+                    // Realizar la resta de fechas (en milisegundos)
+                    var diferenciaEnMilisegundos = fecha2 - fecha1;
+                    
+                    // Calcular la diferencia en días
+                    var diferenciaEnDias = diferenciaEnMilisegundos / (1000 * 60 * 60 * 24);
+                    console.log(diferenciaEnDias);
+
+                    var montoTotal = diferenciaEnDias * <?php echo$costo?>;
+                    
+                    // Mostrar la diferencia
+                    $("#montoTotal").val(montoTotal);
+
                 }
             }
            
         });
+      
+        $("#reserveCantidadPersonas").on("blur", function() {
+        // Obtiene el valor del campo
+            var valor = $(this).val();
+            resultado = true;
+            
+            // Realiza la verificación que desees
+            if (valor === "") {
+                alert("El campo está vacío. Por favor, ingresa un valor.");
+                resultado = false;
+            } 
+            if(!validarCantidadPersonas(valor)){
+                alert("El campo debe contener solo numeros.");
+                resultado = false;
+            }
+            if(valor > <?php echo $cupo ?>){
+                alert("Excede la cantidad de personas permitidas.");
+                resultado = false;
+            }
+            if(resultado){      
+                $("#reserveCantidadPersonas").css("border-color", "#ced4da");
+            }else{    
+                $("#reserveCantidadPersonas").css("border-color", "crimson");
+            }
+        });
 
-       
 
     });
+
+    function validarCantidadPersonas(numero) {
+        const regex = /^[1-9]\d*$/;
+        return regex.test(numero);
+    }
 
     function alquilar(){
 
@@ -215,6 +265,7 @@
             window.location.href = "iniciarSesion.php";    
 
         } 
+
         if(usuarioHabilitado){
             var parametros = {
                 "idPublicacion" : document.getElementById("hidPublicacion").value,
@@ -249,7 +300,7 @@
     </header>
 
     <section>
-        <div class="container w-100" >    
+    <div class="container w-100" >    
         <article>            
             <p id = "inicio"><H3><?php echo $publicacion['titulo'] ?></H3></p>
 
@@ -290,98 +341,163 @@
         </article><br><br>
              
         <article>
-            <form class="row g-3 " id="formulario" method="post" action="publicar.php"  enctype="multipart/form-data">
-                
-                <div class="col-md-12">
-                    <label"><b><?php echo $titulo ?></b></label>                        
-                </div> 
+            <div class = "row g-0">
+                <div class = "col-md-8" style=" border-radius:10px; margin-bottom: 20px;">
+                    <div class= "row g-3  " style=" border-radius:10px; margin-bottom: 20px;">
+                        
+                        <div class="col-md-10">
+                            <label id = "titulo"><b>T&iacutetulo:</b></label>
+                            <input type = "text" id = "titulo" class="form-control" 
+                            value = "<?php echo $titulo ?>" disabled>                       
+                        </div> 
 
-                <div class="col-md-6">
-                    <label"><b>Descripci&oacute;n: </b><?php echo $descripcion ?></label>                        
-                </div> 
+                        <div class="col-md-10">
+                            <label id = "descripcion"><b>Descripci&oacute;n:</b></label>
+                            <input type = "text" id = "descripcion" class="form-control" 
+                                value = " <?php echo $descripcion ?>" disabled>                        
+                        </div> 
 
-                <div class="col-md-6">
-                    <label"><b>Ubicaci&oacute;n: </b><?php echo $ubicacion ?></label>                        
-                </div>  
-                <div class="col-md-6">
-                    <label"> <b>Disponible :</b> 
-                    desde el <?php echo date("d/m/Y", strtotime($fecha_inicio_publicacion));?> 
-                    al <?php echo date("d/m/Y", strtotime($fecha_fin_publicacion)) ?></label>                        
-                </div> 
+                        <div class="col-md-10">
+                            <label for = "ubicacion"><b>Ubicaci&oacute;n:</b></label>
+                            <input type = "text" id = "ubicacion" class="form-control" 
+                                value = " <?php echo $ubicacion ?>" disabled>                        
+                        </div> 
 
-                <div class="col-md-6">
-                    <label"><b>Cantidad de personas permitidas: </b><?php echo $cupo ?></label>                        
-                </div> 
+                        <div class="col-md-6">
+                            <label for = "disponible"><b>Disponible</b></label>
+                            <input type = "text" id = "disponible"class="form-control" 
+                                value = " desde <?php echo date("d/m/Y", strtotime($fecha_inicio_publicacion));?> 
+                            hasta <?php echo date("d/m/Y", strtotime($fecha_fin_publicacion)) ?>" disabled>                        
+                        </div> 
 
-                <div class="col-md-6">
-                    <label"><b>Costo por d&iacute;a: </b><?php echo $costo ?></label>                        
-                </div>            
-
-                <div class = "col-md-6">
-                    <p><b>Servicios que ofrece el lugar: </b></p>                    
-                    <?php                  
-                        while($fila = $resultadoServicios->fetch_array(MYSQLI_ASSOC)){
-                        echo "<div class=\"col-md-2\">
-                                <div class=\"form-check\">
-                                    <input class=\"form-check-input\" type=\"checkbox\" name = \"interes[]\" id=\"flexCheckChecked\" 
-                                    value = " . $fila['nombre'] . " checked disabled>
-                                    <label class=\"form-check-label\" for=\"flexCheckChecked\">"
-                                        .$fila['nombre'].
-                                    "</label>
-                                </div>                        
-                            </div>";
-                        }
-                    ?> 
-                </div>
-                
-                <p><br><b>Reserve: </b></p>
-                <div class="col-md-4" style="border: 1px solid #000;">
-                    <div class = "row">
                         <div class="col-md-4">
+                            <label for = "cantidadPersonas"><b>Personas Permitidas:</b></label>
+                            <input type = "text" id = "cantidadPersonas" class="form-control" 
+                                value = " <?php echo $cupo ?>" disabled>                        
+                        </div> 
+
+                        <div class="col-md-6">
+                            <label id = "serviciosDisponobles"><b>Servicios Disponibles:</b></label>
+                            <?php                  
+                                while($fila = $resultadoServicios->fetch_array(MYSQLI_ASSOC)){
+                                echo "<div class=\"col-md-2\">
+                                        <div class=\"form-check\">
+                                            <input class=\"form-check-input\" type=\"checkbox\" name = \"interes[]\" id=\"flexCheckChecked\" 
+                                            value = " . $fila['nombre'] . " checked disabled>
+                                            <label class=\"form-check-label\" for=\"flexCheckChecked\">"
+                                                .$fila['nombre'].
+                                            "</label>
+                                        </div>                        
+                                    </div>";
+                                }
+                            ?>                      
+                        </div> 
+
+                        <div class="col-md-4">
+                            <label id = "costo"><b>Costo / d&iacute;a:</b></label>
+                            <input type = "text" id = "costo" class="form-control" 
+                                value = " <?php echo $costo ?>" disabled>                        
+                        </div> 
+
+                    </div>  
+                </div>
+
+                <div class = "col-md-4">                    
+                    
+                    <div class="row g-3" style="border-block: 3px solid green; border-radius:10px; margin-bottom: 20px;">
+                        <label><b><h5>Reserve:</h5></b></label>                    
+                        <div class="col-md-12">
                             <label for="rangoFechas" class="form-label"><b>Seleccione Rango De Fecha: </b></label>
                             <input type="text" class="form-control" id="rangoFechas" name= "rangoFechas" 
                             min="16" max="130" required>
                         </div>
-                    </div>
-
-                    <div class = "row">
-                        <div class="col-md-4">
-                            <label for="cantidadPersonas" class="form-label"><b>Cantidad de Personas: </b></label>
-                            <input type="text" class="form-control" id="cantidadPersonas" name= "cantidadPersonas" 
-                            min="16" max="130" required>
+                    
+                        <div class="col-md-12">
+                            <label for="reserveCantidadPersonas" class="form-label"><b>Cantidad de Personas: </b></label>
+                            <input type="text" class="form-control" id="reserveCantidadPersonas" name= "reserveCantidadPersonas" 
+                            min="16" max="130" pattern="^[1-9]\d*$" required>
                         </div>
-                    </div>
-
-                    <div class = "row">
-                        <div class="col-md-4">
+                
+                        <div class="col-md-12">
                             <label for="montoTotal" class="form-label"><b>Monto Total: </b></label>
                             <input type="text" class="form-control" id="montoTotal" name= "montoTotal" 
-                            min="16" max="130" required>
-                        </div>
-                    </div>
-
-                    <div class = "row">
-                        <div class="col-md-4 ">
+                            min="16" max="130" disabled>
+                        </div>          
+            
+                        <div class="col-md-4 " style = "margin-bottom: 20px;">
                             <button type="button" class="btn btn-secondary" id="btn_submit_form_evento"
                             onclick = "alquilar()" name = "enviar" <?php echo $habilitado; ?>>ENVIAR</button>
                         </div>
-                    </div>
+                    
+                    </div> 
                 </div>
-              
-                
-            </form><br>  
-
+            </div>             
+        
             <input type = "hidden" id = "hidPublicacion" name = "hidPublicacion" value = "<?php echo $id; ?>">  
-            <input type = "hidden" id = "hidUsuario" name = "hidUsuario" value = "<?php if(isset($_SESSION['id']))echo $_SESSION['id']; ?>">  
+            <input type = "hidden" id = "hidUsuario" name = "hidUsuario" 
+                value = "<?php if(isset($_SESSION['id']))echo $_SESSION['id']; ?>">  
             <input type = "hidden" id = "hcosto" name = "hcosto" value = "<?php echo $costo; ?>">
             <input type = "hidden" id = "fechaInicio" name = "fechaInicio" >
             <input type = "hidden" id = "fechaFin" name = "fechaFin">
-
+             
+            <span id = "resultado"> Nada aqui </span>
         </article>
-        
-        <span id = "resultado"> Nada aqui </span>
-        </div>
+
+        <article>
+            <p><b><h4>Reseñas</h4></b></p>
+            <div class = "row g-0" style="border-block: 1px solid gray; border-radius:10px; margin-bottom: 20px;">
+                <div class = "col-md-4">
+
+                </div>
+                <div class = "col-md-8">
+                    <label id = "comentario"><b>Comentario:</b></label>
+                    <!--<input type = "text" id = "comentario" class="form-control" 
+                        value = " " disabled> -->
+                    <label id = "comentario"></label>
+                    <div>
+                        <label><b>Respuesta: </b></label>
+                        <label id = "respuesta"></label>
+                    </div>
+                </div>
+       
+            </div>
+            
+            <div class = "row g-0" style="border-block: 1px solid gray; border-radius:10px; margin-bottom: 20px;">
+                 
+                <div class = "col-md-5" style=" border-radius:10px; margin-bottom: 20px;">
+                        <label for = "star1"><b>Calificar:</b><br><br><br></label> 
+                        <input type="checkbox" class = "start" id="star1" name="rating" value="1">
+                        <label for="star1" class="star-label">★</label>
+
+                        <input type="checkbox" class = "start" id="star2" name="rating" value="2">
+                        <label for="star2" class="star-label">★</label>
+
+                        <input type="checkbox" class = "start" id="star3" name="rating" value="3">
+                        <label for="star3" class="star-label">★</label>
+
+                        <input type="checkbox" class = "start" id="star4" name="rating" value="4">
+                        <label for="star4" class="star-label">★</label>
+
+                        <input type="checkbox" class = "start" id="star5" name="rating" value="5">
+                        <label for="star5" class="star-label">★</label>
+                </div>  
+    
+                <div class = "col-md-7" style=" border-radius:10px; margin-bottom: 20px;">
+                    <div class= "row g-0  " style=" border-radius:10px; margin-bottom: 20px;">  
+                        <label for="comentar" class="form-label"><b>Comentar: </b></label>
+                        <textarea class="form-control" id="comentar" name="comentar" rows="2"></textarea>
+                    </div>
+                </div>
+                <div class="col-md-4 " style = "margin-bottom: 20px;">
+                    <button type="button" class="btn btn-secondary" id="btn_submit_form_evento"
+                            onclick = "" name = "enviar" >ENVIAR
+                    </button>
+                </div>
+                          
+        </article>       
+    </div>
     </section>
+   
     <!--Footer-->
     <footer>
         <?php include("../static/html/footer.html"); ?>

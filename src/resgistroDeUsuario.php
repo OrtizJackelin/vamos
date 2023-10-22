@@ -101,7 +101,8 @@
     <link rel="stylesheet" href="../static/css/bootstrap-icons.css">
     <link href="../static/css/bootstrap.min.css" rel="stylesheet"
     integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-    <!--<script type="text/javascript" src="formularioEvento.js"></script>-->
+    <script type="text/javascript" src="../static/js/validaciones.js"></script>
+
 </head>
 
 <body>
@@ -124,7 +125,7 @@
                 <div class="col-md-4">
                     <label for="nombre" class="form-label">Nombre</label>
                     <input type="text" class="form-control" id="nombre" name = "nombre" 
-                    value = "<?php if(isset($nombre)) echo $nombre?>" required>
+                    value = "<?php if(isset($nombre)) echo $nombre?>" pattern="[A-Za-z]{2,15}" required>
                 </div>
 
                 <div class="col-md-4">
@@ -135,7 +136,7 @@
 
                 <div class="col-md-4">
                     <label for="dni" class="form-label">DNI</label>
-                    <input type="number" class="form-control" id="dni" name = "dni" min="1000000" max="99999999" 
+                    <input type="text" class="form-control" id="dni" name = "dni" min="1000000" max="99999999" 
                     value = "<?php if(isset($dni)) echo $dni?>"required>
                 </div>
 
@@ -168,7 +169,7 @@
 
                 <div class="col-md-3">
                     <label for="telefono" class="form-label">Tel&eacute;fono</label>
-                    <input type="number" class="form-control" id="telefono" name = "telefono" min="1000000000" maxlength="9999999999"
+                    <input type="text" class="form-control" id="telefono" name = "telefono" min="1000000000" maxlength="9999999999"
                      value = "<?php if(isset($telefono)) echo $telefono?>" required>
                 </div>
 

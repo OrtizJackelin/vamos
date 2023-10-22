@@ -46,10 +46,35 @@
 }
 
 #carousel{
-    width: 70%; 
+    width: 90%; 
     margin-bottom:20px
+
 }
 #imagenCarousel{
-    height: 500px;
+    height: 600px;
+    
 }
+
+
+ /* Estilizar las casillas de verificación */
+.star-label {
+    display: inline-block;
+    font-size: 35px; /* Tamaño de las estrellas */
+    cursor: pointer;
+    color: #888; /* Color de las estrellas no seleccionadas */
+    margin-right: 5px; /* Espacio entre estrellas */
+  }
+  
+  /* Estilizar las casillas de verificación seleccionadas */
+  input[class="start"] {
+    display: none; /* Ocultar las casillas de verificación */
+  }
+  
+  input[class="start"]:checked + .star-label {
+    color: #ffcc00; /* Color de las estrellas seleccionadas */
+  } 
+  
+  
+  
+  
 

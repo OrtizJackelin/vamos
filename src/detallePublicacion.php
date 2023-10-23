@@ -1,4 +1,3 @@
-
 <?php
     require_once ('sessionStart.php');
 
@@ -18,6 +17,8 @@
     /////////////////////////////////////Modtrar Información de Publicación///////////////////////////////  
     $usuarioHabilitado = 1;
     $habilitado = "enable";
+    $visible = "none";
+    $mostrarR = "none";
 
     $consulta = "SELECT *
                 FROM publicacion
@@ -105,6 +106,68 @@
                 $resultadoServicios = $sentencia->get_result();
                 $sentencia->close();
             }
+            
+            if(isset($_SESSION['esVerificado']) && $_SESSION['esVerificado'] == 1){
+
+                $consulta = "SELECT * 
+                            FROM alquiler
+                            WHERE id_usuario = ? 
+                            AND id_publicacion = ?
+                            AND aprobado = 1
+                            AND fecha_fin < CURRENT_TIMESTAMP";
+
+                $sentencia = $conexion->stmt_init();
+                if(!$sentencia->prepare($consulta)){
+                    echo "fallo la preparacion de la consulta para buscar alquileres <br>";
+                }
+                else{               
+                    $sentencia->bind_param("ss", $_SESSION['id'], $_GET['id']);
+                    $sentencia->execute();
+                    $resultadoAlquiler = $sentencia->get_result();
+                    $sentencia->close();
+                    
+                    if($resultadoAlquiler->num_rows>0){
+                        $consulta = "SELECT *
+                                    FROM reseña
+                                    WHERE id_publicacion = ?
+                                    AND id_usuario = ?";
+                        $sentencia = $conexion->stmt_init();
+                        if(!$sentencia->prepare($consulta)){
+                            echo "fallo la preparacion de la consulta para consulta reseña. <br>";
+                        }
+                        else{                
+                            $sentencia->bind_param("ss", $_SESSION['id'], $_GET['id']);
+                            $sentencia->execute();
+                            $resultadoResena = $sentencia->get_result();
+                            $sentencia->close();
+                            if($resultadoResena->num_rows == 0){
+                                echo "no consiguio reseña";
+                                $visible = "block";
+                            }
+                        }
+                    }
+                }
+            }
+
+            $consulta = "SELECT reseña.*, user.nombre, user.apellido
+                        FROM reseña, user
+                        WHERE reseña.id_publicacion = ?
+                        And user.id = reseña.id_usuario";
+            
+            $sentencia = $conexion->stmt_init();
+            if(!$sentencia->prepare($consulta)){
+                echo "fallo la preparacion de la consulta para buscar alquileres <br>";
+            }
+            else{               
+                $sentencia->bind_param("s", $id );
+                $sentencia->execute();
+                $resultadoTraerResena = $sentencia->get_result();
+                $sentencia->close();
+                if($resultadoTraerResena->num_rows > 0){
+                    $mostrarR = "block";
+                } 
+            }
+
         }
     }
     include "bd/cerrar_conexion.php";                     
@@ -248,6 +311,49 @@
     function validarCantidadPersonas(numero) {
         const regex = /^[1-9]\d*$/;
         return regex.test(numero);
+    }
+
+    function resenar(){
+        var valorSeleccionado = 0;
+        var comentario = $("#comentar").value;
+        if(comentario == ""){
+            alert("el mensaje está vacío");
+        } else {
+        
+            // Encuentra el radio button seleccionado dentro del grupo                   
+            var valorSeleccionado = $('input[name=rating]:checked').val();
+            // Verifica si hay un radio button seleccionado
+            if (valorSeleccionado.length > 0) {      
+                console.log('El radio button seleccionado tiene el valor: ' + valorSeleccionado);
+            } else {
+                console.log('Ningún radio button seleccionado');
+            }
+            console.log(valorSeleccionado);
+            var parametros = {
+                "comentario" : document.getElementById("comentar").value,
+                "calificacion" : valorSeleccionado, 
+                "idUsuario" : <?php echo $_SESSION['id'] ?>,
+                "idPublicacion" : <?php echo $_GET['id'] ?>
+            };
+            $.ajax({
+                data : parametros,
+                url : 'guardarResena.php',
+                type : 'post',
+                beforeSend : function(){
+                    $("#resultadoResena").html("procesando");
+                },
+                success : function(response){
+                    
+                    const subcadena = "Error";
+                    const posicion = response.indexOf(subcadena);
+                    $("#resultadoResena").html(response);
+                    if (posicion == -1) {
+                      $('#divResena').hide();
+                    }
+                }
+            });
+
+        }
     }
 
     function alquilar(){
@@ -443,42 +549,54 @@
             <span id = "resultado"> Nada aqui </span>
         </article>
 
-        <article>
-            <p><b><h4>Reseñas</h4></b></p>
-            <div class = "row g-0" style="border-block: 1px solid gray; border-radius:10px; margin-bottom: 20px;">
-                <div class = "col-md-4">
+        <article >    
+            <p><b><h4>Reseñas</h4></b></p>    
+            <?php if($fila = $resultadoTraerResena->fetch_array(MYSQLI_ASSOC)){
+                extract($fila); ?>
 
-                </div>
-                <div class = "col-md-8">
-                    <label id = "comentario"><b>Comentario:</b></label>
-                    <!--<input type = "text" id = "comentario" class="form-control" 
-                        value = " " disabled> -->
-                    <label id = "comentario"></label>
-                    <div>
-                        <label><b>Respuesta: </b></label>
-                        <label id = "respuesta"></label>
+                    <div class = "row g-2" style="border-block: 1px solid gray; border-radius:10px; margin-bottom: 20px;
+                    display : <?php echo $mostrarR?>">
+
+                        <div class = "col-md-2" id = "mostrarResena">
+                            <?php if($calificacion > 0){
+                                for($i = 0; $i < $calificacion; $i++){ ?>                            
+                                    <img src="../static/imagenes/redes/star-fill.svg" alt="star">
+                                <?php    
+                                }
+                            }?>                            
+                        </div>
+
+                        <div class = "col-md-8">
+                            <label id = "fechaComentario"><b><?php echo $fecha_comentario ?></b></label>
+                            <label id = "comentario"><b><?php echo $nombre . " " . $apellido?></b></label>
+                            <label id = "comentario"><?php echo $comentario ?></label>
+                            <div>
+                                <label id = "fechaRespuesta"><?php echo $fecha_respuesta ?></label>
+                                <label><b>Respuesta:</b></label>
+                                <label id = "respuesta"><?php echo $respuesta ?></label>
+                            </div>
+                        </div>
+        
                     </div>
-                </div>
-       
-            </div>
-            
-            <div class = "row g-0" style="border-block: 1px solid gray; border-radius:10px; margin-bottom: 20px;">
+            <?php }; ?>
+            <div class = "row g-0" style="border-block: 1px solid gray; border-radius:10px; margin-bottom: 20px; 
+                display:<?php echo $visible?>" id = "divResena">
                  
                 <div class = "col-md-5" style=" border-radius:10px; margin-bottom: 20px;">
                         <label for = "star1"><b>Calificar:</b><br><br><br></label> 
-                        <input type="checkbox" class = "start" id="star1" name="rating" value="1">
+                        <input type="radio" class = "start" id="star1" name="rating" value="1">
                         <label for="star1" class="star-label">★</label>
 
-                        <input type="checkbox" class = "start" id="star2" name="rating" value="2">
+                        <input type="radio" class = "start" id="star2" name="rating" value="2">
                         <label for="star2" class="star-label">★</label>
 
-                        <input type="checkbox" class = "start" id="star3" name="rating" value="3">
+                        <input type="radio" class = "start" id="star3" name="rating" value="3">
                         <label for="star3" class="star-label">★</label>
 
-                        <input type="checkbox" class = "start" id="star4" name="rating" value="4">
+                        <input type="radio" class = "start" id="star4" name="rating" value="4">
                         <label for="star4" class="star-label">★</label>
 
-                        <input type="checkbox" class = "start" id="star5" name="rating" value="5">
+                        <input type="radio" class = "start" id="star5" name="rating" value="5">
                         <label for="star5" class="star-label">★</label>
                 </div>  
     
@@ -490,9 +608,10 @@
                 </div>
                 <div class="col-md-4 " style = "margin-bottom: 20px;">
                     <button type="button" class="btn btn-secondary" id="btn_submit_form_evento"
-                            onclick = "" name = "enviar" >ENVIAR
+                            onclick = "resenar()" name = "enviar" >ENVIAR
                     </button>
                 </div>
+                <span id = "resultadoResena"> Nada aqui </span>
                           
         </article>       
     </div>

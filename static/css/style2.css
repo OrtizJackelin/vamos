@@ -43,11 +43,13 @@
 .buttom{
     color: white;
     background: linear-gradient(rgb(84, 190, 3), rgb(5, 121, 5), rgb(1, 81, 27));
+    
 }
 
 #carousel{
     width: 90%; 
     margin-bottom:20px
+    
 
 }
 #imagenCarousel{
@@ -72,6 +74,7 @@
   
   input[class="start"]:checked + .star-label {
     color: #ffcc00; /* Color de las estrellas seleccionadas */
+   
   } 
   
   

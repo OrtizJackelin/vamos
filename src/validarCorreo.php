@@ -55,7 +55,7 @@
     <title>Vamos</title>
     <meta charset="utf-8">
     <link rel="stylesheet" href="../static/css/style.css" type="text/css">
-    <link rel="stylesheet" href="../static/css/style2.css" type="text/css">
+   
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="../static/css/bootstrap-icons.css">
     <link href="../static/css/bootstrap.min.css" rel="stylesheet"

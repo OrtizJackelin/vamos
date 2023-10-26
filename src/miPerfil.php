@@ -223,7 +223,7 @@
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
     
     //////////////////Consultar Para traer los valores que se muestran en el fomulario////////////////////
-    $consulta = "SELECT email, clave, nombre, apellido, dni, fecha_nacimiento, telefono, sexo, bio, foto, es_verificado
+    $consulta = "SELECT email, clave, nombre, apellido, dni, fecha_nacimiento, telefono, sexo, bio, foto, es_verificado, cod_pais
                 FROM user 
                 WHERE id = ? ";         
     $sentencia = $conexion->stmt_init();
@@ -240,7 +240,7 @@
         
         if($dato = $resultado->fetch_array(MYSQLI_ASSOC)) {
             extract($dato);        
-            
+           //var_dump($dato);
         } else {
             $mensaje = $mensaje. " Datos no encontrados. <br>";
             $valido = false;
@@ -300,7 +300,6 @@
     <title>Vamos</title>
     <meta charset="utf-8">
     <link rel="stylesheet" href="../static/css/style.css" type="text/css">
-    <link rel="stylesheet" href="../static/css/style2.css" type="text/css">
     <link rel="stylesheet" href="../static/css/cssNav.css" type="text/css">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="../static/css/bootstrap-icons.css">
@@ -341,10 +340,9 @@
             <form style="display:flex; flex-direction:column;  " id="formulario" method="post" action="miPerfil.php"
                 enctype="multipart/form-data">
 
-                <div
-                    style=" max-width:100%; display:flex; position:relative; flex-wrap:wrap; aling-items:center; justify-content:center;">
+                <div style=" max-width:100%; display:flex; position:relative; flex-wrap:wrap; aling-items:center; justify-content:center;">
 
-                    <div style="margin: 7px;  display:flex;flex-direction:column; flex:3; min-width:250px; max-width: 350px; ">
+                    <div style="margin: 7px;  display:flex;flex-direction:column; flex:3; min-width:250px; max-width: 350px; margin-right: 70px">
 
                         <div class="card" style="width: 100%;">
                             <button type="button" class="btn-close position-absolute top-0 end-0 m-2"
@@ -428,7 +426,7 @@
                             
                                         echo "<option value=\"" . $fila['codigo'] . "\"";
 
-                                        if (isset($codPais) && $codPais === $fila['codigo']) {
+                                        if (isset($fila['codigo']) && $cod_pais === $fila['codigo']) {
                                             echo " selected";
                                         }
                                         

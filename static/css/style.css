@@ -7,16 +7,12 @@ body {
    
 }
 
-/*.sectionPrincipal {
-    height:100%;
-    flex:1;
-}*/
 
-/* COLOR PARA TEXTO DIFERENTE */
+/* COLOR PARA TEXTO DIFERENTE 
 .colorDistinto {
     color: rgb(175, 22, 22);
     font-weight: bold;
-}
+}*/
 
 /* WHATSAPP FLOTANTE */
 .btn-wsp {
@@ -51,44 +47,15 @@ button a:hover {
 
 /* VERSION MOBILE */
 /* IMAGEN Y SLOGAN */
-.imgPrincipal {
+/*.imgPrincipal {
     background-image: url("imagenesIndex/FondoMobile5.png");
     background-size: cover;
     background-position: center;
     height: 650px;
     width: 100%;
-}
+}*/
 
 
-/* EVENTOS */
-.seccionEventos {
-    color: black;
-    display: flex;
-    padding: 30px;
-    margin: 10% 0%;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background-color: rgb(233, 232, 232);
-}
-
-.seccionEventos p {
-    text-align: center;
-}
-
-.seccionEventos h1 {
-   /* background-image: linear-gradient(rgb(179, 3, 3), rgb(119, 8, 8), rgb(68, 1, 1));*/
-    background-clip: text;
-    -webkit-background-clip: text;
-    -moz-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    -moz-text-fill-color: transparent;
-    font-weight: bold;
-    font-size: 60px;
-    text-align: center;
-    animation: agrandar 2s linear;
-    animation-iteration-count: 2;
-}
 
 @keyframes agrandar {
 
@@ -143,7 +110,7 @@ footer a {
 /* VERSION DE ESCRITORIO */
 @media screen and (min-width:720px) {
 
-    /* IMAGEN PRINCIPAL */
+    /* IMAGEN PRINCIPAL 
     .imgPrincipal {
         background-image: url("imagenesIndex/FondoPrueba13.jpg");
         background-repeat: no-repeat;
@@ -151,17 +118,8 @@ footer a {
         background-position: center;
         height: 630px;
         width: 100%;
-    }
+    }*/
 
-
-    /* EVENTOS */
-    .seccionEventos {
-        margin-top: 5%;
-        margin: 5% 0%;
-    }
-    .seccionEventos p{
-        width: 50%;
-    }
 
 
   
@@ -176,6 +134,75 @@ footer a {
     footer p {
         margin: 2px;
         padding: 8px;
+        
     }
 }
 
+/* NAV */
+.nav-link {
+    margin-right: 40px;
+    /*margin-bottom: 10px;*/
+
+}
+.navbar-toggler-icon {
+    color: white;
+}
+
+#btnCard,
+#botonFiltro,
+#a_inscribirme {
+    color: white;
+    background: linear-gradient(rgb(84, 190, 3), rgb(5, 121, 5), rgb(1, 81, 27));
+}
+
+/* EVENTOS */
+#eventos h1, 
+#inscripcionNiños h1{
+    text-align: center;
+    margin-bottom: 80px;
+    margin-top: 50px;
+}
+
+.card-img-top{
+    padding: 5%;
+    height: 200px;
+}
+.buttom{
+    color: white;
+    background: linear-gradient(rgb(84, 190, 3), rgb(5, 121, 5), rgb(1, 81, 27));
+    
+}
+
+#carousel{
+    width: 90%; 
+    margin-bottom:20px
+    
+
+}
+#imagenCarousel{
+    height: 600px;
+    
+}
+
+
+ /* Estilizar las casillas de verificación */
+.star-label {
+    display: inline-block;
+    font-size: 35px; /* Tamaño de las estrellas */
+    cursor: pointer;
+    color: #888; /* Color de las estrellas no seleccionadas */
+    margin-right: 5px; /* Espacio entre estrellas */
+  }
+  
+  /* Estilizar las casillas de verificación seleccionadas */
+  input[class="start"] {
+    display: none; /* Ocultar las casillas de verificación */
+  }
+  
+  input[class="start"]:checked + .star-label {
+    color: #ffcc00; /* Color de las estrellas seleccionadas */
+   
+  } 
+  
+  
+  

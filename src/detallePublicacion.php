@@ -178,7 +178,6 @@
     <title>Detalle de la publicaci&oacute;n</title>
     <meta charset="utf-8">
     <link rel="stylesheet" href="../static/css/style.css" type="text/css">
-    <link rel="stylesheet" href="../static/css/style2.css" type="text/css">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="../static/css/bootstrap-icons.css">
     <link href="../static/css/bootstrap.min.css" rel="stylesheet"
@@ -566,7 +565,7 @@
                             }?>                            
                         </div>
 
-                        <div class = "col-md-8">
+                        <div class = "col-md-12">
                             <label id = "fechaComentario"><b><?php echo $fecha_comentario ?></b></label>
                             <label id = "comentario"><b><?php echo $nombre . " " . $apellido?></b></label>
                             <label id = "comentario"><?php echo $comentario ?></label>
@@ -585,19 +584,19 @@
                 <div class = "col-md-5" style=" border-radius:10px; margin-bottom: 20px;">
                         <label for = "star1"><b>Calificar:</b><br><br><br></label> 
                         <input type="radio" class = "start" id="star1" name="rating" value="1">
-                        <label for="star1" class="star-label">★</label>
+                        <label for="star1" class="star-label">1★</label>
 
                         <input type="radio" class = "start" id="star2" name="rating" value="2">
-                        <label for="star2" class="star-label">★</label>
+                        <label for="star2" class="star-label">2★</label>
 
                         <input type="radio" class = "start" id="star3" name="rating" value="3">
-                        <label for="star3" class="star-label">★</label>
+                        <label for="star3" class="star-label">3★</label>
 
                         <input type="radio" class = "start" id="star4" name="rating" value="4">
-                        <label for="star4" class="star-label">★</label>
+                        <label for="star4" class="star-label">4★</label>
 
                         <input type="radio" class = "start" id="star5" name="rating" value="5">
-                        <label for="star5" class="star-label">★</label>
+                        <label for="star5" class="star-label">5★</label>
                 </div>  
     
                 <div class = "col-md-7" style=" border-radius:10px; margin-bottom: 20px;">

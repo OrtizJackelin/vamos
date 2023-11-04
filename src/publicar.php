@@ -61,7 +61,7 @@
                         } else {
                             $mensaje = $mensaje. "Usted ya posee una publicación ó una solicitud en proceso.<br>
                                                 Si desea más beneficios en su cuenta deberá solicitar la certificación
-                                                de la misma";
+                                                de la misma. <br>";
                             $puedePublicar = false;
                         }
                     }  
@@ -225,7 +225,7 @@
                 }                              
             } 
         } else {
-            $mensaje = $mensaje . "no puede realizar la publicación porque ya tiene una ";
+           // $mensaje = $mensaje . "no puede realizar la publicación porque ya tiene una ";
             $valido = false;
         }
    } else {
@@ -348,8 +348,7 @@
                             <div>
                                 <H6><b><?php echo $mensaje ?></H6></b>
                             </div>
-                            <button type="submit" class="btn-close position-absolute top-0 end-0 m-2" rol="alert" 
-                            data-bs-dismiss="alert"aria-label="Close"></button>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" ></button>                   
                         </div> 
                     <?php } ?>  
                 </div>
@@ -364,8 +363,7 @@
                         <div>
                             <H6><b><?php echo $mensaje ?></H6></b>
                         </div>
-                        <button type="submit" class="btn-close position-absolute top-0 end-0 m-2" rol="alert" 
-                        data-bs-dismiss="alert"aria-label="Close"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" ></button> 
                     </div> 
                 </div>
             </section>

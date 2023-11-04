@@ -100,7 +100,8 @@
                 <div>
                     <H6><b><?php echo $mensaje ?></H6></b>
                 </div>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" ></button>
+                
             </div>
             <?php
             } ?>

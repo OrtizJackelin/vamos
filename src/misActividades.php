@@ -65,7 +65,26 @@
         $sentencia->execute();
         $resultadoSolicitud = $sentencia->get_result();
         $sentencia->close();
-    }        
+    }   
+    
+    $consulta = "SELECT reseña.*, publicacion.titulo, publicacion.ubicacion, user.nombre, user.apellido, user.email 
+                FROM reseña, publicacion, user
+                WHERE publicacion.id = reseña.id_publicacion
+                and publicacion.id_usuario = ?
+                and user.id = reseña.id_usuario
+                AND reseña.comentario IS NOT NULL
+                AND reseña.comentario <> '' ";
+
+    $sentencia = $conexion->stmt_init();
+    if(!$sentencia->prepare($consulta)){
+        $mensaje = $mensaje. "fallo la preparación". $sentencia->error . "<br>";
+    } else {
+        $sentencia->bind_param("s",$_SESSION['id']);
+        $sentencia->execute();
+        $resultadoResena = $sentencia->get_result();
+        $sentencia->close();
+    }
+
 ?>
 <html>
 <head>
@@ -126,6 +145,38 @@
                 }
             });
         }
+
+        function responderResena(id){
+            console.log(id);
+            var respuesta = $("#responderRes").val()
+            console.log(respuesta);
+            var parametros = {
+                "id" : id,
+                "respuesta" : respuesta,
+                
+            };
+            
+            $.ajax({
+                data : parametros,
+                url : 'actualizarRespuestaResena.php',
+                type : 'post',
+                beforeSend: function () {
+                    $("#resultadoRespuestaResena").html("procesando");
+                },
+                success: function (response) {
+                    const posicionActualizo = response.indexOf("Se realizó actualizacion");                  
+                    $("#resultadoRespuestaResena").html(response);
+                    if (posicionActualizo == -1) {
+                        $("#responderRes").prop("disabled", false);
+                        $("#enviarResena").text("Habilitar");
+                    } else {
+                        console.log('posicion:' + posicionActualizo);
+                        $("#responderRes").prop("disabled", true);
+                        $("#enviarResena").text("Deshabilitar");
+                    }
+                }
+            });
+        }
  
     </script>
    
@@ -140,6 +191,7 @@
             <li><a href="#tabs-1">Mis Publicaciones</a></li>
             <li><a href="#tabs-2">Mis Alquileres</a></li>
             <li><a href="#tabs-3">Solicitudes</a></li>
+            <li><a href="#tabs-4">Reseñas/ Mis Publicaciones</a></li>
         </ul>
         <div id="tabs-1">
             <section class = "sectionPrincipal">
@@ -169,7 +221,7 @@
                                     <td><?php echo $ubicacion ?></td>
                                     <td><?php echo $fecha_solicitud ?></td>
                                     <td><?php switch ($estado) {
-                                            case 0:
+                                            case 0:                                                
                                                 echo "En proceso de revisión";
                                                 break;
                                             case 1:
@@ -308,6 +360,65 @@
                         </table>
                     </div>
                     <span id = "resultadoSol"> Nada aqui </span>
+                </div>
+            </section>
+        </div>
+        <div id="tabs-4">
+            <section class = "sectionPrincipal">
+                <div class="container w-100" >            
+                    <div class=" col-md-12 text-center" style=" margin-top: 20px;">
+                        <h4> Reseñas/Mis Publicaciones </h4>
+                    </div>
+                    <div class = "table-responsive">
+                        <table class="table table-striped table-hover" id = "misAlquileres" name = "misAlquileres">
+                            
+                            <tr>
+                                <th>T&iacute;tulo</th>
+                                <th>Ubicaci&oacute;n</th>
+                                <th>Cliente</th>
+                                <th>Email</th>
+                                <th>Comentario/Cliente</th>
+                                <th colspan="3">Responder Comentario</th>                              
+                            </tr>
+
+                            <?php while($fila = $resultadoResena->fetch_array(MYSQLI_ASSOC)) { 
+                                extract($fila);
+                                $habilitado = "enable";                           
+                                if($respuesta != NULL && $respuesta !=""){
+                                    $habilitado = "disabled";
+                                    
+                                }
+                            ?>
+                                <tr>                                  
+                                    <td><?php echo $titulo ?></td>
+                                    <td><?php echo $ubicacion ?></td>
+                                    <td><?php echo $nombre . " " . $apellido ?></td>
+                                    <td><?php echo $email ?></td>
+                                    <td><?php echo $comentario ?></td>
+                                    <td>
+                                    </td>
+                                    <td>     
+                                        <div class= "row g-0  " style=" border-radius:10px; margin-bottom: 20px;">  
+                                            <textarea class="form-control" id="responderRes" name="responderRes" 
+                                            rows="2" style = "width: 500px" <?php echo $habilitado?> 
+                                           ><?php if(isset($respuesta)) echo $respuesta?></textarea>
+                                        </div>
+                                    </td>
+
+                                    <td>                    
+                                        <button type="button" class="btn btn-secondary" id="enviarResena"
+                                            onclick = "responderResena(<?php echo $id ?>)"  name = "enviarResena" 
+                                            <?php echo $habilitado?>>Enviar
+                                        </button>                            
+                                    </td>    
+                                            
+                                </tr>
+                            <?php                        
+                            }  
+                            ?>
+                        </table>
+                    </div>
+                    <span id = "resultadoRespuestaResena"> Nada aqui </span>
                 </div>
             </section>
         </div>

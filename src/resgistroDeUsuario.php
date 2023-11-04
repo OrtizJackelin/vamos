@@ -39,14 +39,15 @@
 
     /////////////////////////Validar inputs en el servidor////////////////////////////////
 
-    if (isset($_POST['enviar'])){
+    if ($_SERVER['REQUEST_METHOD'] === 'POST'){
 
         include  "../src/inputUsuario.php";
+        //var_dump($_POST);
         
     }
     ////////////////////////////////////////////////////////////////////////////////////////
 
-    if (isset($_POST['enviar']) && $valido){
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && $valido){
         
         $consulta = "INSERT INTO  
         user (nombre, apellido, dni, sexo, fecha_nacimiento, telefono, email, clave, cod_pais)
@@ -119,7 +120,7 @@
 
             </div><br><br>
 
-            <form class="row g-3 " id="formulario" method="post" action="resgistroDeUsuario.php" >
+            <form class="row g-3 " name= "formulario" id="formulario" method="post" action="resgistroDeUsuario.php" >
 
                 <div class="col-md-4">
                     <label for="nombre" class="form-label">Nombre</label>
@@ -202,10 +203,13 @@
   
      
                 <div class="col-12 ">
-                    <button type="submit" class="btn btn-secondary" id="btn_submit_form_evento" name = "enviar">ENVIAR</button>
+                    <button type="submit" class="btn btn-secondary" id="enviar" name = "enviar">ENVIAR</button>
                 </div>
 
             </form><br>
+
+            <div id="liveAlertPlaceholder"></div>      
+
             <?php
                 if(!$valido){
                     ?>

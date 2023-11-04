@@ -24,7 +24,7 @@
             
     }
 
-    $consulta = "SELECT fecha_solicitud, estado, fecha_revision FROM verificacion_cuenta WHERE id_usuario = ?";
+    $consulta = "SELECT fecha_solicitud, estado, fecha_revision, fecha_vencimiento FROM verificacion_cuenta WHERE id_usuario = ?";
     $sentencia = $conexion->stmt_init();
     if(!$sentencia->prepare($consulta)){
         $mensaje = $mensaje. "fallo la preparción". $sentencia->error . "<br>";
@@ -37,14 +37,25 @@
         if($resultado->num_rows > 0){
 
             if($dato = $resultado->fetch_row()){
-               // var_dump($dato);
+                //var_dump($dato);
                 
                 switch ($dato[1]) {
                     case 0:
                         $mensaje = $mensaje. "Usted ya posee una solicitud pendiente de fecha: " . $dato[0] . "<br>";
                         break;
                     case 1:
-                        $mensaje = $mensaje. "Usted ya posee una cuenta verificada de fecha: " . $dato[2] . "<br>";
+                        $fechaActual = time(); // Obtiene la fecha y hora actual en forma de marca de tiempo Unix
+                        $fechaVencimiento = strtotime($dato['3']); // Convierte la fecha de tu base de datos a marca de tiempo Unix
+                        
+                        if ($fechaActual < $fechaVencimiento) {
+                            // La fecha actual es posterior a la fecha de vencimiento
+                            // Realiza aquí las acciones que necesites                        
+                            $mensaje = $mensaje. "Usted ya posee una cuenta verificada de fecha: " . $dato[3] . "<br>";
+                        } else {
+                            $mensaje = $mensaje. "Última verificación vencida, fecha: " . $dato[3] . "<br>";
+                            $solicitudEnProceso = false;
+                            $valido = false;
+                        }
                         break;
                     case 2:
                         $mensaje = $mensaje. "Última Solicitud rechazada, fecha: " . $dato[2] . "<br>";

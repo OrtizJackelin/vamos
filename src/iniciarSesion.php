@@ -4,6 +4,7 @@
     $valido = true;
     $hash = "";
     $hash_almacenado = "";
+    $mensaje = "";
 
 
     if (isset($_POST['enviar'])) {                
@@ -11,10 +12,10 @@
         if (isset($_POST['email'])) {
     
             if (filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
-                echo "La dirección de correo electrónico es válida.";
+                //echo "La dirección de correo electrónico es válida.";
             
             } else {
-                echo "La dirección de correo electrónico no es válida.";
+               // echo "La dirección de correo electrónico no es válida.";
                 $valido = false;
             }
 
@@ -23,11 +24,11 @@
                 $patron = '/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@#$%^&+=!])(?!.*\s).{8,}$/';
 
                 if (preg_match($patron, $_POST['clave'])) {
-                    echo "La contraseña cumple con los requisitos.<br>";
+                    //echo "La contraseña cumple con los requisitos.<br>";
                     //$hash = password_hash($_POST['clave'], PASSWORD_DEFAULT);
 
                 } else {
-                    echo "La contraseña no cumple con los requisitos.<br>";
+                   // echo "La contraseña no cumple con los requisitos.<br>";
                     $valido = false;
 
                 }
@@ -53,7 +54,7 @@
 
         $sentencia = $conexion->stmt_init();
         if(!$sentencia->prepare($consulta)){
-            echo "fallo la preparacion de la consulta <br>";
+            //echo "fallo la preparacion de la consulta <br>";
         }
         else{
         
@@ -63,19 +64,78 @@
             $sentencia->close();
             //var_dump($resultado);
             if($fila = $resultado->fetch_array(MYSQLI_ASSOC)){
-                var_dump($fila['es_administrador']);                
+               // var_dump($fila['es_administrador']);                
                 // Obtener el hash almacenado en la base de datos para ese usuario
                 $hash_almacenado = $fila["clave"];
 
                 // Verificar si la contraseña ingresada es válida
                 if (password_verify($_POST['clave'], $hash_almacenado)) {
-                   
+                    // La contraseña es válida, permitir el acceso
+
                     $_SESSION['id'] = $fila['id'];
                     $_SESSION['nombre'] = $fila['nombre'];
                     $_SESSION['esVerificado'] = $fila['es_verificado']; 
                     $_SESSION['esAdministrador'] = $fila['es_administrador']; 
-                    // La contraseña es válida, permitir el acceso
-                
+
+                    // consultar y revisar el vencimiento de la solicitud de alquiler
+
+                    $consulta = "SELECT alquiler.*
+                    FROM alquiler, publicacion 
+                    WHERE alquiler.id_usuario = ?
+                    and alquiler.id_publicacion = publicacion.id ";                  
+                    $sentencia = $conexion->stmt_init();
+                    if(!$sentencia->prepare($consulta)){
+                        $mensaje = $mensaje. "fallo la preparción". $sentencia->error . "<br>";
+                       // echo"fallo la preparción". $sentencia->error . "<br>";
+                    } else {
+                        $sentencia->bind_param("s",$_SESSION['id']);
+                        $sentencia->execute();
+                        $resultadoAlquiler = $sentencia->get_result();
+                        $sentencia->close();
+                        while($filaAlquiler = $resultadoAlquiler->fetch_array(MYSQLI_ASSOC)) { 
+                           // extract($fila);
+                           // var_dump($fila);
+                            if($filaAlquiler['aprobado'] == 0){
+                                //convertimos la fecha en una fecha con formato de marca de tiempo
+                                $fechaDada = strtotime($filaAlquiler['fecha_solicitud']);
+                                $fechaActual = time();
+                                $diferenciaSegundos = $fechaActual - $fechaDada;
+                                $unDiaEnSegundos = 24*60*60;
+                                $diferenciaEnDias = floor ($diferenciaSegundos/$unDiaEnSegundos);
+
+                                if($diferenciaEnDias >= 3){
+                                    //echo"entro en el if >3";
+                                    $consulta = "UPDATE alquiler
+                                                SET aprobado = 2
+                                                WHERE id_usuario = ?
+                                                and id = ?";
+                                    $senteciaAlquiler = $conexion->stmt_init();
+                                    if(!$senteciaAlquiler ->prepare($consulta)){
+                                        $mensaje = $mensaje. "fallo la preparación". $senteciaAlquiler ->error . "<br>";
+                                       // echo"fallo la preparacion". $senteciaAlquiler ->error ;
+                                    } else {
+                                       // echo"ok";
+                                        $senteciaAlquiler ->bind_param("ss",$_SESSION['id'], $filaAlquiler['id'] );
+                                        $senteciaAlquiler ->execute();
+                                        if($senteciaAlquiler ->affected_rows >0){
+                                            //echo "Se realizaron actualizaciones en los estados de solicitudes de alquiler". "<br>";
+                                            $mensaje = $mensaje. "Se realizaron actualizaciones en los estados de solicitudes de alquiler". "<br>";
+                                        } else {
+                                            //echo "No hubo actualizaciones en los estados de solicitudes de alquiler". "<br>";
+                                            $mensaje = $mensaje. "No hubo actualizaciones en los estados de solicitudes de alquiler". "<br>";
+                                        }
+                                    }
+
+                                   //echo"paso de largo";
+                                }
+                                $senteciaAlquiler ->close();
+                            }
+                        }
+                      
+                    }
+                    ////////////////////////////////////////////////////////////////////////////
+
+                    // para verificar la fencha de vencimiento de la verificacion de cuenta
                     if($fila['es_verificado'] == 1){
                         $consulta = "SELECT fecha_vencimiento 
                         FROM verificacion_cuenta 
@@ -87,7 +147,7 @@
 
                         $sentencia = $conexion->stmt_init();
                         if(!$sentencia->prepare($consulta)){
-                            echo "fallo la prepracion de la consuta para traer fecha de vencimiento.<br>";
+                           // echo "fallo la prepracion de la consuta para traer fecha de vencimiento.<br>";
                         } else {
                             $sentencia->bind_param("ss", $fila['id'], $fila['id']);
                             $sentencia->execute();
@@ -102,30 +162,30 @@
                                                     WHERE id = ?";
                                         $sentencia = $conexion->stmt_init();
                                         if(!$sentencia->prepare($consulta)){
-                                            echo "No se preparo la consulta para actualizar el es_verificado del usuario";
+                                           // echo "No se preparo la consulta para actualizar el es_verificado del usuario";
                                         } else {
                                             $sentencia->bind_param("s", $fila['id']);
                                             $sentencia->execute();
-                                            if($sentecia->affected_rows > 0){
+                                            if($sentencia->affected_rows > 0){
                                                 $_SESSION['esVerificado'] = 0;
                                             } else {
-                                                echo "no se realizo cambios es la variables es_verificado";
+                                               // echo "no se realizo cambios es la variables es_verificado";
                                             }
                                             $sentencia->close();
                                         }
                                     } else {
-                                        echo "La fecha actual es menor o igual a la fecha de vencimiento.<br>";
+                                        //echo "La fecha actual es menor o igual a la fecha de vencimiento.<br>";
                                     }
 
                                 } else {
-                                    echo"No se establecio una fecha de vencimiento para la verificacion de la cuenta, fecha null.<br>";
+                                   // echo"No se establecio una fecha de vencimiento para la verificacion de la cuenta, fecha null.<br>";
                                 }
                             } else {
-                                echo "No se encontro resultado de la consulta para traer fecha de vencimiento";
+                               // echo "No se encontro resultado de la consulta para traer fecha de vencimiento";
                             }
                         }
                     } else {
-                        echo "Usuario no esta verificado.<br>";
+                        //echo "Usuario no esta verificado.<br>";
                     }
 
                     header("Location: index.php");

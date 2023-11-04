@@ -19,6 +19,7 @@
     $habilitado = "enable";
     $visible = "none";
     $mostrarR = "none";
+    $mostrarRespuesta = "none";
 
     $consulta = "SELECT *
                 FROM publicacion
@@ -551,7 +552,11 @@
         <article >    
             <p><b><h4>Reseñas</h4></b></p>    
             <?php if($fila = $resultadoTraerResena->fetch_array(MYSQLI_ASSOC)){
-                extract($fila); ?>
+                extract($fila); 
+                if($respuesta != NULL && $respuesta !=""){
+                    $mostrarRespuesta = "block";
+                }
+                ?>
 
                     <div class = "row g-2" style="border-block: 1px solid gray; border-radius:10px; margin-bottom: 20px;
                     display : <?php echo $mostrarR?>">
@@ -567,11 +572,11 @@
 
                         <div class = "col-md-12">
                             <label id = "fechaComentario"><b><?php echo $fecha_comentario ?></b></label>
-                            <label id = "comentario"><b><?php echo $nombre . " " . $apellido?></b></label>
+                            <label id = "usuarioCliente"><b><?php echo $nombre . " " . $apellido?></b></label>
                             <label id = "comentario"><?php echo $comentario ?></label>
-                            <div>
-                                <label id = "fechaRespuesta"><?php echo $fecha_respuesta ?></label>
-                                <label><b>Respuesta:</b></label>
+                            <div style = "display:<?php echo $mostrarRespuesta?>">
+                                <label id = "fechaRespuesta"><b><?php echo $fecha_respuesta ?></b></label>
+                                <label><b>@<?php echo $_SESSION['nombre']. ": " ?></b></label>
                                 <label id = "respuesta"><?php echo $respuesta ?></label>
                             </div>
                         </div>

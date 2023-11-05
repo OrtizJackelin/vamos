@@ -26,10 +26,9 @@
             
     }
 
-    
 
     //////////////////////////////////Actualizar información de formulario/////////////////////////////////////////////////
-    if(isset($_POST['enviar'])){
+    if ($_SERVER['REQUEST_METHOD'] === 'POST'){
 
         include "../src/inputUsuario.php";
         $esVerificado = 0;
@@ -305,10 +304,10 @@
     <link rel="stylesheet" href="../static/css/bootstrap-icons.css">
     <link href="../static/css/bootstrap.min.css" rel="stylesheet"
     integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-    <!--<script type="text/javascript" src="formularioEvento.js"></script>-->
+    <script type="text/javascript" src="../static/js/validaciones.js"></script>
 </head>
 
-<body>
+<body class = "background2">
 
     <header>
         <?php include("barraDeNavegacion.php"); ?>
@@ -342,7 +341,7 @@
 
                 <div style=" max-width:100%; display:flex; position:relative; flex-wrap:wrap; aling-items:center; justify-content:center; align-item:flex-end;">
 
-                    <div style=" align-items:center; display:flex;flex-direction:column; flex:3; min-width:250px; width:100%; ">
+                    <div style=" align-items:center; display:flex;flex-direction:column; flex:3; min-width:250px; width:100%;">
 
                         <div class="card" style="width: 100%;">
                             <button type="button" class="btn-close position-absolute top-0 end-0 m-2"
@@ -362,8 +361,8 @@
                             </div>
                         </div>
                         <div style=" margin-top:7px; margin-bottom:7px; flex:1; min-width:250px; width:100%; ">
-                        <label for="fechaNacimiento" class="form-label">Fecha de nacimiento</label>
-                        <input type="date" class="form-control" id="fechaNacimiento" name="fechaNacimiento"
+                        <label for="fechaN" class="form-label">Fecha de nacimiento</label>
+                        <input type="date" class="form-control" id="fechaN" name="fechaN"
                             value="<?php if(isset($fecha_nacimiento)) echo $fecha_nacimiento;?>" min="16" max="150"
                             required>
                         </div>
@@ -414,7 +413,7 @@
 
                             <div style="padding:7px;">
                                 <label for="dni" class="form-label">DNI</label>
-                                <input type="number" class="form-control" id="dni" name="dni" min="1000000"
+                                <input type="text" class="form-control" id="dni" name="dni" min="1000000"
                                     max="99999999" value="<?php if(isset($dni)) echo $dni;?>" required>
                             </div>
 
@@ -431,7 +430,7 @@
                             
                     <div style="padding:7px; ">
                         <label for="telefono" class="form-label">Tel&eacute;fono</label>
-                        <input type="number" class="form-control" id="telefono" name="telefono" min="1000000000"
+                        <input type="text" class="form-control" id="telefono" name="telefono" min="1000000000"
                             maxlength="9999999999" value="<?php if(isset($telefono)) echo $telefono;?>" required>
                     </div>
 
@@ -456,12 +455,12 @@
                         <div class="row" style="margin-bottom: 30px">
 
                             <?php      
-$interesSele = $resultadoInteresUsuario->fetch_all(MYSQLI_ASSOC);
+                            $interesSele = $resultadoInteresUsuario->fetch_all(MYSQLI_ASSOC);
 
- $intereses = array_column($interesSele, "id_interes");
-     $intereses = array_combine($intereses, $intereses);
-  while($fila = $resultado_interes->fetch_array(MYSQLI_ASSOC)){                         
-  ?>
+                            $intereses = array_column($interesSele, "id_interes");
+                                $intereses = array_combine($intereses, $intereses);
+                            while($fila = $resultado_interes->fetch_array(MYSQLI_ASSOC)){                         
+                            ?>
                             <div class="col-md-2">
                                 <div class="form-check">
                                     <input class="form-check-input" type="checkbox" name="interes[]"
@@ -504,8 +503,8 @@ $interesSele = $resultadoInteresUsuario->fetch_all(MYSQLI_ASSOC);
                         <!-- <div class = "row" style="margin-bottom: 30px">-->
 
                         <!--  <div class="col-4 ">
-    <button type="submit" class="btn btn-secondary" id="btn_submit_form_evento" name = "guardar">Guardar</button>
-    </div>-->
+                        <button type="submit" class="btn btn-secondary" id="btn_submit_form_evento" name = "guardar">Guardar</button>
+                        </div>-->
 
 
                         <!-- Button trigger modal -->
@@ -534,7 +533,7 @@ $interesSele = $resultadoInteresUsuario->fetch_all(MYSQLI_ASSOC);
                                 <div class="modal-footer">
                                     <button type="button" class="btn btn-secondary"
                                         data-bs-dismiss="modal">Cerrar</button>
-                                    <button type="submit" class="btn btn-primary" name="enviar">Enviar</button>
+                                    <button type="submit" class="btn btn-primary" id = "enviar" name="enviar">Enviar</button>
                                 </div>
                             </div>
                         </div>
@@ -542,6 +541,7 @@ $interesSele = $resultadoInteresUsuario->fetch_all(MYSQLI_ASSOC);
 
                 </div>
             </form><br>
+            <div id="liveAlertPlaceholder"></div>
 
             <?php if(!$valido) { ?>
             <div class="alert alert-primary d-flex align-items-center alert-dismissible" role="alert"

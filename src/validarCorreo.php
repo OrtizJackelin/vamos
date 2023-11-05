@@ -91,13 +91,12 @@
         }
 
         function validarEmail(event) {
-            var resultado = event.target.checkValidity();
             var regex = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,3})$/;
             if (regex.test(event.target.value)) {
-            event.target.style.borderColor = "#ced4da";
+                event.target.style.borderColor = "#ced4da";
             } else {
-            alert('El correo no cumple con un formato válido.', 'warning');
-            event.target.style.borderColor = "crimson";
+                alert('El correo no cumple con un formato válido.', 'warning');
+                event.target.style.borderColor = "crimson";
             }
         }
 

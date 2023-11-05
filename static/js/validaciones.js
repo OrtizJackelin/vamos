@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
     alertPlaceholder = document.getElementById('liveAlertPlaceholder');
 
     // Limpia el valor del campo de entrada
-    inputDate.value = ""; // O puedes usar inputDate.value = null;
+   // inputDate.value = ""; // O puedes usar inputDate.value = null;
 
     inputs.forEach(
         function(myinput){
@@ -57,6 +57,11 @@ function validarInputs(event){
         resultado= validarFechaNacimiento(event.target.value);
 
     }
+    if(event.target.id==='fechaN'){
+        console.log(event.target.value);
+        resultado= validarFechaNacimiento(event.target.value);
+
+    }
     if(event.target.id==='clave'){
         resultado= validarClave(event.target.value);
         contrasena = event.target.value;
@@ -91,7 +96,13 @@ function validarEmail(email){
 function validarClave(clave){
 
     var regex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[#$%^&+=!])(?!.*\s).{8,}$/;
-    return regex.test(clave) ? true : false;
+    if(regex.test(clave)) {
+
+    } else {
+        alert('La clave no coincide con el patrón (Patrón: al menos A-Z,a-z,#$%&+=,0123456789. minimo 8 digitos)','warning');
+        return false; 
+    }
+    
 
         /*Esta expresión regular exige lo siguiente:
         Al menos una letra mayúscula.
@@ -166,7 +177,12 @@ function validarDni(dni){
         
     } else{
         const regex = /^[1-9][0-9]{6,7}$/;
-        return regex.test(dni);
+        if(regex.test(dni)){
+            return true ;
+        } else {
+            alert('El Dni solo puede contener numeros. (Debe ser un número entre 6 y 8 digitos)','warning');
+            return false;
+        }
     }
 }
 
@@ -177,7 +193,12 @@ function validarTelefono(telefono){
         return false;
     } else{
         const regex = /^\d{10}$/;
-        return regex.test(telefono);
+        if(regex.test(telefono)){
+            return true ;
+        } else {
+            alert('El número detTeléfono solo puede contener numeros (10 digitos).','warning');
+            return false;
+        }
     }
 }    
 

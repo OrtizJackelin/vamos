@@ -182,7 +182,7 @@
    
 </head>
 
-<body  >
+<body  class ="background2">
     
     <header>
         <?php include("barraDeNavegacion.php"); ?><br><br>
@@ -246,7 +246,7 @@
                         ?>
                     </table>
                 </div>               
-                <span id = "resultadoPublicacion"> Nada aqui </span>
+                <span id = "resultadoPublicacion"></span>
             </div>      
         
         </div>
@@ -302,7 +302,7 @@
                         ?>
                     </table>
                 </div>
-                <span id = "resultadoAlquiler"> Nada aqui </span>
+                <span id = "resultadoAlquiler"></span>
             </div>
         
         </div>
@@ -360,7 +360,7 @@
                         ?>
                     </table>
                 </div>
-                <span id = "resultadoSol"> Nada aqui </span>
+                <span id = "resultadoSol"></span>
             </div>
         </div>
 
@@ -418,7 +418,7 @@
                         ?>
                     </table>
                 </div>
-                <span id = "resultadoRespuestaResena"> Nada aqui </span>
+                <span id = "resultadoRespuestaResena"  ></span>
             </div>
         </div>
     </div>  

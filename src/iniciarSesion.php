@@ -7,36 +7,27 @@
     $mensaje = "";
 
 
-    if (isset($_POST['enviar'])) {                
+    if ($_SERVER['REQUEST_METHOD'] === 'POST'){              
     
         if (isset($_POST['email'])) {
     
-            if (filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
-                //echo "La dirección de correo electrónico es válida.";
-            
-            } else {
-               // echo "La dirección de correo electrónico no es válida.";
+            if (!filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
+                $mensaje = $mensaje ."La dirección de correo electrónico no es válida.";
                 $valido = false;
-            }
-
+            
+            } 
             if (isset($_POST['clave'])){
     
                 $patron = '/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@#$%^&+=!])(?!.*\s).{8,}$/';
-
-                if (preg_match($patron, $_POST['clave'])) {
-                    //echo "La contraseña cumple con los requisitos.<br>";
-                    //$hash = password_hash($_POST['clave'], PASSWORD_DEFAULT);
-
-                } else {
-                   // echo "La contraseña no cumple con los requisitos.<br>";
+                if (!preg_match($patron, $_POST['clave'])) {    
+                    $mensaje = $mensaje . "La contraseña no cumple con los requisitos.<br>";
                     $valido = false;
-
-                }
+                } 
             } 
         }
     }
     
-    if (isset($_POST['enviar']) && $valido) {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && $valido) {
 
         try{
             include "bd/conexion.php";
@@ -71,22 +62,21 @@
                 // Verificar si la contraseña ingresada es válida
                 if (password_verify($_POST['clave'], $hash_almacenado)) {
                     // La contraseña es válida, permitir el acceso
-
                     $_SESSION['id'] = $fila['id'];
                     $_SESSION['nombre'] = $fila['nombre'];
-                   // $_SESSION['esVerificado'] = $fila['es_verificado']; 
+                    $_SESSION['esVerificado'] = $fila['es_verificado']; 
                     $_SESSION['esAdministrador'] = $fila['es_administrador']; 
 
                     
                     // para verificar la fencha de vencimiento de la verificacion de cuenta
                     if($fila['es_verificado'] == 1){
                         $consulta = "SELECT fecha_vencimiento 
-                        FROM verificacion_cuenta 
-                        WHERE estado = 1 
-                        AND id_usuario = ? 
-                        AND id = (SELECT MAX(id) 
-                                FROM verificacion_cuenta 
-                                WHERE id_usuario = ?)";
+                                    FROM verificacion_cuenta 
+                                    WHERE estado = 1 
+                                    AND id_usuario = ? 
+                                    AND id = (SELECT MAX(id) 
+                                            FROM verificacion_cuenta 
+                                            WHERE id_usuario = ?)";
 
                         $sentencia = $conexion->stmt_init();
                         if(!$sentencia->prepare($consulta)){
@@ -141,7 +131,7 @@
                     and alquiler.id_publicacion = publicacion.id ";                  
                     $sentencia = $conexion->stmt_init();
                     if(!$sentencia->prepare($consulta)){
-                        $mensaje = $mensaje. "fallo la preparción". $sentencia->error . "<br>";
+                        //$mensaje = $mensaje. "fallo la preparción". $sentencia->error . "<br>";
                        // echo"fallo la preparción". $sentencia->error . "<br>";
                     } else {
                         $sentencia->bind_param("s",$_SESSION['id']);
@@ -195,13 +185,14 @@
                     exit;
             
                 } else {
-                // La contraseña no es válida, mostrar un mensaje de error
-                    echo "contraseña incorrecta <br>";
+                    // La contraseña no es válida, mostrar un mensaje de error
+                    $mensaje = $mensaje ."contraseña incorrecta <br>";
+                    $valido = false; 
                 }
 
             }
             else{
-                echo "No se encontro resultado para la consulta";
+                //echo "No se encontro resultado para la consulta";
             }
         }   
         include "bd/cerrar_conexion.php";  
@@ -220,9 +211,82 @@
         <link rel="stylesheet" href="../static/css/bootstrap-icons.css">
         <link href="../static/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-    </head>
+        
+        <script>
+            var alertPlaceholder = "";
 
-    <body>
+            document.addEventListener("DOMContentLoaded", () => {
+                const inputs = document.querySelectorAll("input");
+                alertPlaceholder = document.getElementById('liveAlertPlaceholder');
+
+                inputs.forEach(
+                    function(myinput){
+                        myinput.addEventListener("blur",validarInputs);
+                    }
+                );
+
+                document.querySelector("#enviar").addEventListener("click", function(event) {
+                event.preventDefault(); // Evita el envío predeterminado del formulario
+                validarFormulario(event);
+                });
+            });
+
+            function validarFormulario(event) {
+                var formulario = document.querySelector("#formulario");
+                if (formulario.checkValidity()) {
+                formulario.submit();
+                } else {
+                formulario.reportValidity();
+                }
+            }
+
+            function validarInputs(event){
+            
+                if(event.target.id==='email'){
+                    validarEmail(event.target.value);
+                }
+ 
+                if(event.target.id==='clave'){
+                    validarClave(event.target.value);
+                  
+                }
+
+            }
+
+            function validarEmail(email) {
+                var regex = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,3})$/;
+                if (regex.test(email)) {
+                    event.target.style.borderColor="#ced4da";                    
+                } else {
+                    event.target.style.borderColor="crimson";
+                    alert('El correo no cumple con un formato válido.', 'warning');                   
+                }
+            }
+
+            function validarClave(clave){
+                var regex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[#$%^&+=!])(?!.*\s).{8,}$/;
+                if(regex.test(clave)) {
+                    event.target.style.borderColor="#ced4da";                  
+                } else {
+                    event.target.style.borderColor="crimson";
+                    alert('Contraseña no cumple con el formato.', 'warning');                   
+                }
+            }
+
+            function alert(message, type) {
+                var wrapper = document.createElement('div');
+                wrapper.innerHTML = '<div class="alert alert-' + type + ' alert-dismissible" role="alert">' +
+                '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-exclamation-triangle-fill flex-shrink-0 me-2" viewBox="0 0 16 16" role="img" aria-label="Warning:">' +
+                '<path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.980 1.767h13.713c.889 0 1.438-.99.980-1.767L8.982 1.566zM8 5c.535 0 .954.462.900.995l-.350 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>' +
+                '</svg>' +
+                message + '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>';
+
+                alertPlaceholder.append(wrapper);
+            }
+        </script>
+    </head>   
+
+    <body class="background2">
         <header>
             <?php include("barraDeNavegacion.php"); ?>
         </header>
@@ -254,6 +318,20 @@
 
                 </form>
             </div>
+            
+            <div id="liveAlertPlaceholder"></div>
+            <?php
+            if(!$valido){ ?>
+                <div class="alert alert-warning d-flex align-items-center alert-dismissible" role="alert"
+                    style="margin-top: 20px; margin-bottom: 5px;" type="hidedeng">
+                    <?php include "../static/imagenes/redes/exclamation-triangle.svg" ?>
+                <div>
+                    <H6><b><?php echo $mensaje ?></H6></b>
+                </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" ></button>                
+                </div>
+                <?php
+            } ?>
         </div>
  
         <!--FOOTER-->

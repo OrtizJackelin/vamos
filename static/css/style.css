@@ -24,6 +24,7 @@ body {
     background-image: url("../imagenes/2.webp");
     background-size: cover;
     background-repeat: no-repeat;
+    
    }
     &::before{
         content:"";
@@ -58,6 +59,7 @@ body {
         box-shadow:  1px 1px 5px rgba(84, 190, 3, 0.774),
         -1px -1px 5px rgba(1, 81, 28, 0.395)!important;
         background: radial-gradient(at left top, rgb(84, 190, 3), rgb(1, 81, 27)) !important;
+       
     }
 }
 

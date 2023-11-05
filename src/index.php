@@ -132,7 +132,7 @@
         </div>
                 
 
-        <div class="todoElAlto" id="tabs" style="border:none; margin-top:20px; background:transparent;" >
+        <div  id="tabs" style="border:none; margin-top:20px; background:transparent;" >
             <ul class="publicacionesRecomendados" >
                 <li class="liTab" ><a style=" cursor: pointer!important;" href="#tabs-1">Publicaciones</a></li>
                 <li class="liTab" ><a style=" cursor: pointer!important;" href="#tabs-2">Recomendados</a></li>

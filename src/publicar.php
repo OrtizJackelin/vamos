@@ -38,6 +38,7 @@
         $resultadoServicio = $sentencia->get_result();
         $sentencia->close();
     }
+    //var_dump($_SESSION);
 
    // var_dump($_SESSION['esVerificado']);
    if(isset($_SESSION['esVerificado'])){
@@ -228,7 +229,7 @@
            // $mensaje = $mensaje . "no puede realizar la publicación porque ya tiene una ";
             $valido = false;
         }
-   } else {
+    } else {
         $mensaje = $mensaje . " Debe logearse para crear una publicación. <br>";
         $puedePublicar = false;
    }
@@ -249,7 +250,7 @@
         integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     </head>
 
-    <body>
+    <body >
         <header>
             <?php include("barraDeNavegacion.php"); ?>
         </header>
@@ -257,7 +258,7 @@
         <!--FORMULARIO-->
         <?php if($puedePublicar) { ?>
             <section>            
-                <div class="container w-85 ">
+                <div class="container w-85" >
 
                     <div class=" col-md-12 text-center" style=" margin-top: 20px;">
                         <h2> Publicar </h2>
@@ -355,7 +356,7 @@
             </section>
 
          <?php } else {?>
-            <section >    
+            <section class="todoElAlto">    
                 <div class = "container w-75">
                     <div class="alert alert-primary d-flex align-items-center alert-dismissible" role="alert" 
                     style = "margin-top: 20px; margin-bottom: 5px;" type = "hidedeng">
@@ -363,7 +364,8 @@
                         <div>
                             <H6><b><?php echo $mensaje ?></H6></b>
                         </div>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" ></button> 
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" ></button>            
+
                     </div> 
                 </div>
             </section>

@@ -117,7 +117,7 @@
                     if (posicion == -1) {
                         console.log('eliminar fila: ' + id);
                         const tabla = document.getElementById("solicitudVerificacion");
-                        const filaAEliminar = document.getElementById("publicacion_fila_" + id);
+                        const filaAEliminar = document.getElementById("verificacion_fila_" + id);
 
                         if (filaAEliminar) {
                             tabla.deleteRow(filaAEliminar.rowIndex);
@@ -210,10 +210,10 @@
                             $sentencia->execute();
                             $resultado = $sentencia->get_result();
                             $sentencia->close();
-                            if($filaNombre = $resultado->fetch_row()){ ?>
+                            if($filaNombre = $resultado->fetch_array(MYSQLI_ASSOC)){ ?>
                                 <tr id="verificacion_fila_<?php echo $id; ?>">  
                                     <td><?php echo $id ?></td>                                
-                                    <td><?php echo $filaNombre[0] ?></td>
+                                    <td><?php echo $filaNombre['nombre'] ?></td>
                                     <td><img src=../static/imagenes/documentoUsuarios/<?php echo $documento ?>
                                             class="card-img-top" alt="documento">
                                     </td>

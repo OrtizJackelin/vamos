@@ -74,9 +74,65 @@
 
                     $_SESSION['id'] = $fila['id'];
                     $_SESSION['nombre'] = $fila['nombre'];
-                    $_SESSION['esVerificado'] = $fila['es_verificado']; 
+                   // $_SESSION['esVerificado'] = $fila['es_verificado']; 
                     $_SESSION['esAdministrador'] = $fila['es_administrador']; 
 
+                    
+                    // para verificar la fencha de vencimiento de la verificacion de cuenta
+                    if($fila['es_verificado'] == 1){
+                        $consulta = "SELECT fecha_vencimiento 
+                        FROM verificacion_cuenta 
+                        WHERE estado = 1 
+                        AND id_usuario = ? 
+                        AND id = (SELECT MAX(id) 
+                                FROM verificacion_cuenta 
+                                WHERE id_usuario = ?)";
+
+                        $sentencia = $conexion->stmt_init();
+                        if(!$sentencia->prepare($consulta)){
+                           // echo "fallo la prepracion de la consuta para traer fecha de vencimiento.<br>";
+                        } else {
+                            $sentencia->bind_param("ss", $fila['id'], $fila['id']);
+                            $sentencia->execute();
+                            $resultadoFechaVencimiento = $sentencia->get_result();
+                            $sentencia->close();
+                            if($fecha = $resultadoFechaVencimiento->fetch_assoc()){
+                                if($fecha['fecha_vencimiento']!= NULL){
+                                    $fechaActual = date("Y-m-d");
+                                    if($fechaActual > $fecha['fecha_vencimiento']){
+                                        $consulta = "UPDATE user
+                                                    SET es_verificado = 0
+                                                    WHERE id = ?";
+                                        $sentencia = $conexion->stmt_init();
+                                        if(!$sentencia->prepare($consulta)){
+                                           // echo "No se preparo la consulta para actualizar el es_verificado del usuario";
+                                        } else {
+                                            $sentencia->bind_param("s", $fila['id']);
+                                            $sentencia->execute();
+                                            if($sentencia->affected_rows > 0){
+                                                $_SESSION['esVerificado'] = 0;
+                                            } else {
+                                               // echo "no se realizo cambios es la variables es_verificado";
+                                               $_SESSION['esVerificado'] = $fila['es_verificado'];
+                                            }
+                                            $sentencia->close();
+                                        }
+                                    } else {
+                                        //echo "La fecha actual es menor o igual a la fecha de vencimiento.<br>";
+                                    }
+
+                                } else {
+                                   // echo"No se establecio una fecha de vencimiento para la verificacion de la cuenta, fecha null.<br>";
+                                }
+                            } else {
+                               // echo "No se encontro resultado de la consulta para traer fecha de vencimiento";
+                            }
+                        }
+                    } else {
+                        //echo "Usuario no esta verificado.<br>";
+                    }
+                    
+                    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                     // consultar y revisar el vencimiento de la solicitud de alquiler
 
                     $consulta = "SELECT alquiler.*
@@ -135,59 +191,6 @@
                     }
                     ////////////////////////////////////////////////////////////////////////////
 
-                    // para verificar la fencha de vencimiento de la verificacion de cuenta
-                    if($fila['es_verificado'] == 1){
-                        $consulta = "SELECT fecha_vencimiento 
-                        FROM verificacion_cuenta 
-                        WHERE estado = 1 
-                        AND id_usuario = ? 
-                        AND id = (SELECT MAX(id) 
-                                FROM verificacion_cuenta 
-                                WHERE id_usuario = ?)";
-
-                        $sentencia = $conexion->stmt_init();
-                        if(!$sentencia->prepare($consulta)){
-                           // echo "fallo la prepracion de la consuta para traer fecha de vencimiento.<br>";
-                        } else {
-                            $sentencia->bind_param("ss", $fila['id'], $fila['id']);
-                            $sentencia->execute();
-                            $resultadoFechaVencimiento = $sentencia->get_result();
-                            $sentencia->close();
-                            if($fecha = $resultadoFechaVencimiento->fetch_assoc()){
-                                if($fecha['fecha_vencimiento']!=NULL){
-                                    $fechaActual = date("Y-m-d");
-                                    if($fechaActual > $fecha['fecha_vencimiento']){
-                                        $consulta = "UPDATE user
-                                                    SET es_verificado = 0
-                                                    WHERE id = ?";
-                                        $sentencia = $conexion->stmt_init();
-                                        if(!$sentencia->prepare($consulta)){
-                                           // echo "No se preparo la consulta para actualizar el es_verificado del usuario";
-                                        } else {
-                                            $sentencia->bind_param("s", $fila['id']);
-                                            $sentencia->execute();
-                                            if($sentencia->affected_rows > 0){
-                                                $_SESSION['esVerificado'] = 0;
-                                            } else {
-                                               // echo "no se realizo cambios es la variables es_verificado";
-                                            }
-                                            $sentencia->close();
-                                        }
-                                    } else {
-                                        //echo "La fecha actual es menor o igual a la fecha de vencimiento.<br>";
-                                    }
-
-                                } else {
-                                   // echo"No se establecio una fecha de vencimiento para la verificacion de la cuenta, fecha null.<br>";
-                                }
-                            } else {
-                               // echo "No se encontro resultado de la consulta para traer fecha de vencimiento";
-                            }
-                        }
-                    } else {
-                        //echo "Usuario no esta verificado.<br>";
-                    }
-
                     header("Location: index.php");
                     exit;
             
@@ -224,34 +227,34 @@
             <?php include("barraDeNavegacion.php"); ?>
         </header>
 
-        <section  class = "sectionPrincipal">
 
-            <div class="container w-75 ">
+        <div class="todoElAlto">
 
-                <div class=" col-md-12 text-center" style=" margin-top: 20px;">
-                    <h2> Iniciar Sesion</h2>
-                </div>
-
+            <div class=" col-md-12 text-center" style=" margin-top: 40px;">
+                <h2><p> Iniciar Sesion</p></h2>
+            </div>
+            
+            <div class = "container" style=" margin-top: 40px;">
                 <form class="row g-5 p-5 " id="formulario" method="post" action="iniciarSesion.php" >
-              
+                
                     <div class="col-md-4 m-5">
-                        <label for="email" class="form-label">Email</label>
+                        <label for="email" class="form-label"><b>Email</b></label>
                         <input type="email" class="form-control" id="email" name = "email" required>
                     </div>
 
                     <div class="col-md-4 m-5">
-                        <label for="clave" class="form-label">Password</label>
+                        <label for="clave" class="form-label"><b>Password</b></label>
                         <input type="password" id="clave" name="clave"  class="form-control" 
                             pattern="^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@#$%^&+=!])(?!.*\s).{8,}$"required>
                     </div>         
-    
-                    <div class="col-12 ">
-                        <button type="submit" class="btn btn-success" id="validar" name = "enviar">Iniciar</button>
+
+                    <div class="col-12 m-5">
+                        <button type="submit" class="btn btn-success" id="enviar" name = "enviar" style = "width: 100px">Iniciar</button>
                     </div>
 
-                </form><br>
+                </form>
             </div>
-        </section>
+        </div>
  
         <!--FOOTER-->
         <footer>

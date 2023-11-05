@@ -24,7 +24,10 @@
             
     }
 
-    $consulta = "SELECT fecha_solicitud, estado, fecha_revision, fecha_vencimiento FROM verificacion_cuenta WHERE id_usuario = ?";
+    $consulta = "SELECT fecha_solicitud, estado, fecha_revision, fecha_vencimiento 
+                FROM verificacion_cuenta 
+                WHERE id_usuario = ?
+                ORDER BY fecha_solicitud DESC LIMIT 1 ";
     $sentencia = $conexion->stmt_init();
     if(!$sentencia->prepare($consulta)){
         $mensaje = $mensaje. "fallo la preparción". $sentencia->error . "<br>";
@@ -36,29 +39,29 @@
 
         if($resultado->num_rows > 0){
 
-            if($dato = $resultado->fetch_row()){
+            if($dato = $resultado->fetch_array(MYSQLI_ASSOC)){
                 //var_dump($dato);
                 
-                switch ($dato[1]) {
+                switch ($dato['estado']) {
                     case 0:
-                        $mensaje = $mensaje. "Usted ya posee una solicitud pendiente de fecha: " . $dato[0] . "<br>";
+                        $mensaje = $mensaje. "Usted ya posee una solicitud pendiente de fecha: " . $dato['fecha_solicitud'] . "<br>";
                         break;
                     case 1:
                         $fechaActual = time(); // Obtiene la fecha y hora actual en forma de marca de tiempo Unix
-                        $fechaVencimiento = strtotime($dato['3']); // Convierte la fecha de tu base de datos a marca de tiempo Unix
+                        $fechaVencimiento = strtotime($dato['fecha_vencimiento']); // Convierte la fecha de tu base de datos a marca de tiempo Unix
                         
-                        if ($fechaActual < $fechaVencimiento) {
+                        if ($fechaActual <= $fechaVencimiento) {
                             // La fecha actual es posterior a la fecha de vencimiento
                             // Realiza aquí las acciones que necesites                        
-                            $mensaje = $mensaje. "Usted ya posee una cuenta verificada de fecha: " . $dato[3] . "<br>";
+                            $mensaje = $mensaje. "Usted ya posee una cuenta verificada de fecha: " . $dato['fecha_revision'] . "<br>";
                         } else {
-                            $mensaje = $mensaje. "Última verificación vencida, fecha: " . $dato[3] . "<br>";
+                            $mensaje = $mensaje. "Última verificación vencida, fecha: " . $dato['fecha_vencimiento'] . "<br>";
                             $solicitudEnProceso = false;
                             $valido = false;
                         }
                         break;
                     case 2:
-                        $mensaje = $mensaje. "Última Solicitud rechazada, fecha: " . $dato[2] . "<br>";
+                        $mensaje = $mensaje. "Última Solicitud rechazada, fecha: " . $dato['fecha_revision'] . "<br>";
                         $solicitudEnProceso = false;
                         $valido = false;
                         echo "aqui";
@@ -75,7 +78,7 @@
     }
 
    
-    if(isset($_POST['enviar'])){
+    if($_SERVER['REQUEST_METHOD'] === 'POST'){
         //var_dump($_FILES); 
     
         if (file_exists($directorioDestino) && ($_FILES['foto']['size']>0) ) {
@@ -135,6 +138,10 @@
                                 $sentencia->close(); 
                             }
 
+                            $solicitudEnProceso = true;
+                            $mensaje = "Solicitud procesada con exito <br>";
+                            header("Location: index.php?msj=" . $mensaje);
+                            exit;
 
                         } else {
                             $mensaje = $mensaje ."Hubo un error al mover el archivo. ". $errorArchivo . "<br>";
@@ -177,22 +184,44 @@
         <link rel="stylesheet" href="../static/css/bootstrap-icons.css">
         <link href="../static/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+        <script> 
+            document.addEventListener("DOMContentLoaded", function() {
+                document.querySelector("#enviar").addEventListener("click", function(event) {
+                    event.preventDefault();
+                    validarFormulario(event);
+                });
+            });
+          
+
+            function validarFormulario(event){
+                var formulario= document.querySelector("#formulario");
+                if (formulario.checkValidity()){
+                    formulario.submit();
+
+                }
+                else{
+                    formulario.reportValidity();
+                }
+            }
+        </script>
     </head>
 
     <body>
+
         <header>
             <?php include("barraDeNavegacion.php"); ?>
         </header>
 
-        <?php if(!$solicitudEnProceso) { ?>
-            <section class = "sectionPrincipal">
-                <div class="container w-75 ">
+        <div class="todoElAlto" id="tabs">
+            
+            <?php if(!$solicitudEnProceso) { ?>
+                <div class="container">
 
                     <div class=" col-md-12 text-center" style=" margin-top: 20px;">
                         <h2> Verificaci&oacute;n De Cuenta</h2>
                     </div>
 
-                    <form class="row g-5 p-5 " id="formulario" method="post" action="solicitarVerificarCuenta.php" enctype = "multipart/form-data" >
+                    <form class="row g-5 p-5 " id="formulario" method="POST" action="solicitarVerificarCuenta.php" enctype = "multipart/form-data" >
 
 
                         <div class="col-md-12 mb-3">
@@ -207,7 +236,7 @@
                         </div>     
         
                         <div class="col-12 ">
-                            <button type="submit" class="btn btn-success" id="validar" name = "enviar">Solicitar</button>
+                            <button type="submit" class="btn btn-success" id="enviar" name = "enviar">Solicitar</button>
                         </div>
 
                     </form><br>
@@ -220,17 +249,13 @@
                             <div>
                                 <H6><b><?php echo $mensaje ?></H6></b>
                             </div>
-                            <button type="submit" class="btn-close btn position-absolute top-0 end-0 m-2" rol="alert"  
-                                data-bs-dismiss="alert" aria-label="Cerrar"></button>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div> 
 
                     <?php } ?>
                 </div>
-               
-            </section>
 
-        <?php } else { ?>
-            <section class = "sectionPrincipal">    
+            <?php } else { ?>                
                 <div class = "container w-75">
                     <div class="alert alert-primary d-flex align-items-center alert-dismissible" role="alert" 
                     style = "margin-top: 20px; margin-bottom: 5px;" type = "hidedeng">
@@ -238,12 +263,11 @@
                         <div>
                             <H6><b><?php echo $mensaje ?></H6></b>
                         </div>
-                        <button type="submit" class="btn-close position-absolute top-0 end-0 m-2" rol="alert" 
-                        data-bs-dismiss="alert"aria-label="Close"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div> 
-                </div>
-            </section>
-        <?php } ?>
+                </div>          
+            <?php } ?>
+        </div>    
        
         <!--FOOTER-->
         <footer>

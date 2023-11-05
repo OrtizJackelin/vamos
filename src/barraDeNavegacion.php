@@ -10,7 +10,7 @@ if($_SERVER['PHP_SELF']!="/Practicos/ProyectoProgramacionIII/src/resgistroDeUsua
 
 
 ?>
-<nav style=" padding: 2px;" class=" navbar navbar-expand-lg navbar-dark sticky-top border-bottom">
+<nav style=" padding: 2px; margin-left:0px!important; background:white; " class=" navbar navbar-expand-lg navbar-dark sticky-top border-bottom background ">
     <div class="container-fluid">
         <div>
             <a class="navbar-brand" href="index.php">
@@ -21,7 +21,7 @@ if($_SERVER['PHP_SELF']!="/Practicos/ProyectoProgramacionIII/src/resgistroDeUsua
             margin:0!important;"><?php if (isset($_SESSION['id'])) echo "Hola " . $_SESSION['nombre'];?></p>
         </div>
 
-        <div class="btn-group " style="margin-right:60px;">
+        <div class="btn-group " style="margin-right:60px; z-index:1111;">
             <?php if (isset($_SESSION['id'])) {  ?>
                 <a style="text-decoration:none; padding:0px; border-radius:0px; " class="dropdown-item"
                     href="../src/miPerfil.php">

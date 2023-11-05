@@ -20,10 +20,12 @@
     $visible = "none";
     $mostrarR = "none";
     $mostrarRespuesta = "none";
+    
 
-    $consulta = "SELECT *
-                FROM publicacion
-                WHERE id = ?";
+    $consulta = "SELECT p.*, u.nombre
+                FROM publicacion p, user u
+                WHERE p.id = ?
+                AND u.id = p.id_usuario";
 
     $sentencia = $conexion->stmt_init();
 
@@ -332,7 +334,7 @@
             var parametros = {
                 "comentario" : document.getElementById("comentar").value,
                 "calificacion" : valorSeleccionado, 
-                "idUsuario" : <?php echo $_SESSION['id'] ?>,
+                "idUsuario" : <?php echo $nombre ?>,
                 "idPublicacion" : <?php echo $_GET['id'] ?>
             };
             $.ajax({
@@ -400,7 +402,7 @@
     </script>
 </head>
 
-<body>
+<body class="background2" >
     <header>
         <?php include("barraDeNavegacion.php"); ?><br><br>
     </header>
@@ -470,10 +472,10 @@
                         </div> 
 
                         <div class="col-md-6">
-                            <label for = "disponible"><b>Disponible</b></label>
+                            <label for = "disponible"><b>Disponible: </b></label>
                             <input type = "text" id = "disponible"class="form-control" 
-                                value = " desde <?php echo date("d/m/Y", strtotime($fecha_inicio_publicacion));?> 
-                            hasta <?php echo date("d/m/Y", strtotime($fecha_fin_publicacion)) ?>" disabled>                        
+                                value = "<?php echo "del  ".date("d/m/Y", strtotime($fecha_inicio_publicacion)).
+                                "  al  ". date("d/m/Y", strtotime($fecha_fin_publicacion));?>" disabled>                        
                         </div> 
 
                         <div class="col-md-4">
@@ -502,7 +504,7 @@
                         <div class="col-md-4">
                             <label id = "costo"><b>Costo / d&iacute;a:</b></label>
                             <input type = "text" id = "costo" class="form-control" 
-                                value = " <?php echo $costo ?>" disabled>                        
+                                value = " $ <?php echo $numeroFormateado = number_format($costo , 2, '.', ',')?>" disabled>                        
                         </div> 
 
                     </div>  
@@ -546,43 +548,47 @@
             <input type = "hidden" id = "fechaInicio" name = "fechaInicio" >
             <input type = "hidden" id = "fechaFin" name = "fechaFin">
              
-            <span id = "resultado"> Nada aqui </span>
+            <span id = "resultado"></span>
         </article>
 
         <article >    
-            <p><b><h4>Reseñas</h4></b></p>    
+            <h4><p style="display: 
+                <?php if ($visible === "block" || $mostrarR === "block") { echo "block"; } else { echo "none"; } ?>">
+                <b>Reseñas</b>
+            </p></h4>
             <?php if($fila = $resultadoTraerResena->fetch_array(MYSQLI_ASSOC)){
                 extract($fila); 
                 if($respuesta != NULL && $respuesta !=""){
                     $mostrarRespuesta = "block";
                 }
                 ?>
-
-                    <div class = "row g-2" style="border-block: 1px solid gray; border-radius:10px; margin-bottom: 20px;
+                
+                <div class = "row g-2" style="border-block: 1px solid gray; border-radius:10px; margin-bottom: 20px;
                     display : <?php echo $mostrarR?>">
 
-                        <div class = "col-md-2" id = "mostrarResena">
-                            <?php if($calificacion > 0){
-                                for($i = 0; $i < $calificacion; $i++){ ?>                            
-                                    <img src="../static/imagenes/redes/star-fill.svg" alt="star">
-                                <?php    
-                                }
-                            }?>                            
-                        </div>
-
-                        <div class = "col-md-12">
-                            <label id = "fechaComentario"><b><?php echo $fecha_comentario ?></b></label>
-                            <label id = "usuarioCliente"><b><?php echo $nombre . " " . $apellido?></b></label>
-                            <label id = "comentario"><?php echo $comentario ?></label>
-                            <div style = "display:<?php echo $mostrarRespuesta?>">
-                                <label id = "fechaRespuesta"><b><?php echo $fecha_respuesta ?></b></label>
-                                <label><b>@<?php echo $_SESSION['nombre']. ": " ?></b></label>
-                                <label id = "respuesta"><?php echo $respuesta ?></label>
-                            </div>
-                        </div>
-        
+                    <div class = "col-md-2" id = "mostrarResena">
+                        <?php if($calificacion > 0){
+                            for($i = 0; $i < $calificacion; $i++){ ?>                            
+                                <img src="../static/imagenes/redes/star-fill.svg" alt="star">
+                            <?php    
+                            }
+                        }?>                            
                     </div>
+
+                    <div class = "col-md-12">
+                        <label id = "fechaComentario"><b><?php echo $fecha_comentario ?></b></label>
+                        <label id = "usuarioCliente"><b><?php echo $nombre . " " . $apellido?></b></label>
+                        <label id = "comentario"><?php echo $comentario ?></label>
+                        <div style = "display:<?php echo $mostrarRespuesta?>">
+                            <label id = "fechaRespuesta"><b><?php echo $fecha_respuesta ?></b></label>
+                            <label><b>@<?php echo $publicacion['nombre']. ": " ?></b></label>
+                            <label id = "respuesta"><?php echo $respuesta ?></label>
+                        </div>
+                    </div>
+    
+                </div>
             <?php }; ?>
+
             <div class = "row g-0" style="border-block: 1px solid gray; border-radius:10px; margin-bottom: 20px; 
                 display:<?php echo $visible?>" id = "divResena">
                  
@@ -615,7 +621,7 @@
                             onclick = "resenar()" name = "enviar" >ENVIAR
                     </button>
                 </div>
-                <span id = "resultadoResena"> Nada aqui </span>
+                <span id = "resultadoResena"></span>
                           
         </article>       
     </div>

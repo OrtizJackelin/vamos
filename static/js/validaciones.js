@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
     alertPlaceholder = document.getElementById('liveAlertPlaceholder');
 
     // Limpia el valor del campo de entrada
-    inputDate.value = null; // O puedes usar inputDate.value = null;
+    inputDate.value = ""; // O puedes usar inputDate.value = null;
 
     inputs.forEach(
         function(myinput){
@@ -42,7 +42,7 @@ function alert(message, type) {
      message + '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>'
   
     alertPlaceholder.append(wrapper)
-  }
+}
 
 function validarInputs(event){
 

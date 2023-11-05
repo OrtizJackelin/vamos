@@ -182,11 +182,13 @@
    
 </head>
 
-<body>
+<body  >
+    
     <header>
         <?php include("barraDeNavegacion.php"); ?><br><br>
     </header>
-    <div id="tabs">
+
+    <div class="todoElAlto" id="tabs">
         <ul>
             <li><a href="#tabs-1">Mis Publicaciones</a></li>
             <li><a href="#tabs-2">Mis Alquileres</a></li>
@@ -194,241 +196,232 @@
             <li><a href="#tabs-4">Reseñas/ Mis Publicaciones</a></li>
         </ul>
         <div id="tabs-1">
-            <section class = "sectionPrincipal">
-                <div class="container w-100" >    
-                    
-                    <div class=" col-md-12 text-center" style=" margin-top: 20px;">
-                        <h4> Mis Publicaciones</h4>
-                    </div>
-                    <div class = "table-responsive">
-                        <table class="table table-striped table-hover" id = "misPublicaciones" name = "misPublicaciones">
-                            
-                            <tr>
-                                <td>Publicaci&oacute;n N°</td>
-                                <td>T&iacute;tulo</td>
-                                <td>Ubicaci&oacute;n</td>
-                                <td>Fecha Publicaci&oacute;n</td>
-                                <td>Estatus</td>
-                                <td colspan="3">Detalle De Publicaci&oacute;n</td>                              
-                            </tr>
+       
+            <div class="container-fluid " >    
+                
+                <div class=" col-md-12 text-center" style=" margin-top: 20px;">
+                    <h4> Mis Publicaciones</h4>
+                </div>
+                <div class = "table-responsive">
+                    <table class="table table-striped table-hover" id = "misPublicaciones" name = "misPublicaciones">
+                        
+                        <tr>
+                            <td>Publicaci&oacute;n N°</td>
+                            <td>T&iacute;tulo</td>
+                            <td>Ubicaci&oacute;n</td>
+                            <td>Fecha Publicaci&oacute;n</td>
+                            <td>Estatus</td>
+                            <td colspan="3">Detalle De Publicaci&oacute;n</td>                              
+                        </tr>
 
-                            <?php while($fila = $resultadoPublicacion->fetch_array(MYSQLI_ASSOC)) { 
-                                extract($fila);
-                            ?>
-                                <tr id="verificacion_fila_<?php echo $id; ?>">  
-                                    <td><?php echo $id ?></td>                                
-                                    <td><?php echo $titulo ?></td>
-                                    <td><?php echo $ubicacion ?></td>
-                                    <td><?php echo $fecha_solicitud ?></td>
-                                    <td><?php switch ($estado) {
-                                            case 0:                                                
-                                                echo "En proceso de revisión";
-                                                break;
-                                            case 1:
-                                                echo "Aprobado/Publicado";
-                                                break;
-                                            case 2:
-                                                echo "Rechazado";
-                                                break;
-                                            }                                
-                                        ?>
-                                    </td>
-                                    <td><a href="detallePublicacion.php?id=<?php echo $id; ?> " target = "_blank"> Ver detalle
-                                            <img src="../static/imagenes/redes/box-arrow-up-right.svg" alt="abrir en otra ventana">
-                                        </a>
-                                    </td>
-                                            
-                                </tr>
-                            <?php                        
-                            }  
-                            ?>
-                        </table>
-                    </div>               
-                    <span id = "resultadoPublicacion"> Nada aqui </span>
-                </div>      
-            </section>
+                        <?php while($fila = $resultadoPublicacion->fetch_array(MYSQLI_ASSOC)) { 
+                            extract($fila);
+                        ?>
+                            <tr id="verificacion_fila_<?php echo $id; ?>">  
+                                <td><?php echo $id ?></td>                                
+                                <td><?php echo $titulo ?></td>
+                                <td><?php echo $ubicacion ?></td>
+                                <td><?php echo $fecha_solicitud ?></td>
+                                <td><?php switch ($estado) {
+                                        case 0:                                                
+                                            echo "En proceso de revisión";
+                                            break;
+                                        case 1:
+                                            echo "Aprobado/Publicado";
+                                            break;
+                                        case 2:
+                                            echo "Rechazado";
+                                            break;
+                                        }                                
+                                    ?>
+                                </td>
+                                <td><a href="detallePublicacion.php?id=<?php echo $id; ?> " target = "_blank"> Ver detalle
+                                        <img src="../static/imagenes/redes/box-arrow-up-right.svg" alt="abrir en otra ventana">
+                                    </a>
+                                </td>
+                                        
+                            </tr>
+                        <?php                        
+                        }  
+                        ?>
+                    </table>
+                </div>               
+                <span id = "resultadoPublicacion"> Nada aqui </span>
+            </div>      
+        
         </div>
         <div id="tabs-2">
-            <section class = "sectionPrincipal">
-                <div class="container w-100" >            
-                    <div class=" col-md-12 text-center" style=" margin-top: 20px;">
-                        <h4> Mis Aquileres </h4>
-                    </div>
-                    <div class = "table-responsive">
-                        <table class="table table-striped table-hover" id = "misAlquileres" name = "misAlquileres">
-                            
-                            <tr>
-                                <td>T&iacute;tulo</td>
-                                <td>Ubicaci&oacute;n</td>
-                                <td>Fecha inicio alquiler</td>
-                                <td>Fecha fin alquiler</td>
-                                <td>Costo por d&iacute;a</td>
-                                <td>Estatus</td>
-                                <td colspan="3">Detalle De Publicaci&oacute;n</td>                              
-                            </tr>
-
-                            <?php while($fila = $resultadoAlquiler->fetch_array(MYSQLI_ASSOC)) { 
-                                extract($fila);
-                            ?>
-                                <tr>                                  
-                                    <td><?php echo $titulo ?></td>
-                                    <td><?php echo $ubicacion ?></td>
-                                    <td><?php echo $fecha_inicio ?></td>
-                                    <td><?php echo $fecha_fin ?></td>
-                                    <td><?php echo $costo ?></td>
-                                    <td><?php switch ($aprobado) {
-                                            case 0:
-                                                echo "En proceso de revisión";
-                                                break;
-                                            case 1:
-                                                echo "Aprobado";
-                                                break;
-                                            case 2:
-                                                echo "Rechazado";
-                                                break;
-                                            }                                
-                                        ?>
-                                    </td>
-                                    <td><a href="detallePublicacion.php?id=<?php echo $id_publicacion; ?> " target = "_blank"> Ver detalle
-                                            <img src="../static/imagenes/redes/box-arrow-up-right.svg" alt="abrir en otra ventana">
-                                        </a>
-                                    </td>
-                                            
-                                </tr>
-                            <?php                        
-                            }  
-                            ?>
-                        </table>
-                    </div>
-                    <span id = "resultadoAlquiler"> Nada aqui </span>
+           
+            <div class="container-fluid" >            
+                <div class=" col-md-12 text-center" style=" margin-top: 20px;">
+                    <h4> Mis Aquileres </h4>
                 </div>
-            </section>
+                <div class = "table-responsive">
+                    <table class="table table-striped table-hover" id = "misAlquileres" name = "misAlquileres">
+                        
+                        <tr>
+                            <td>T&iacute;tulo</td>
+                            <td>Ubicaci&oacute;n</td>
+                            <td>Fecha inicio alquiler</td>
+                            <td>Fecha fin alquiler</td>
+                            <td>Costo por d&iacute;a</td>
+                            <td>Estatus</td>
+                            <td colspan="3">Detalle De Publicaci&oacute;n</td>                              
+                        </tr>
+
+                        <?php while($fila = $resultadoAlquiler->fetch_array(MYSQLI_ASSOC)) { 
+                            extract($fila);
+                        ?>
+                            <tr>                                  
+                                <td><?php echo $titulo ?></td>
+                                <td><?php echo $ubicacion ?></td>
+                                <td><?php echo $fecha_inicio ?></td>
+                                <td><?php echo $fecha_fin ?></td>
+                                <td><?php echo $costo ?></td>
+                                <td><?php switch ($aprobado) {
+                                        case 0:
+                                            echo "En proceso de revisión";
+                                            break;
+                                        case 1:
+                                            echo "Aprobado";
+                                            break;
+                                        case 2:
+                                            echo "Rechazado";
+                                            break;
+                                        }                                
+                                    ?>
+                                </td>
+                                <td><a href="detallePublicacion.php?id=<?php echo $id_publicacion; ?> " target = "_blank"> Ver detalle
+                                        <img src="../static/imagenes/redes/box-arrow-up-right.svg" alt="abrir en otra ventana">
+                                    </a>
+                                </td>
+                                        
+                            </tr>
+                        <?php                        
+                        }  
+                        ?>
+                    </table>
+                </div>
+                <span id = "resultadoAlquiler"> Nada aqui </span>
+            </div>
+        
         </div>
 
         <div id="tabs-3">
-            <section class = "sectionPrincipal">
-                <div class="container w-100" >            
-                    <div class=" col-md-12 text-center" style=" margin-top: 20px;">
-                        <h4> Solicitudes </h4>
-                    </div>
-                    <div class = "table-responsive">
-                        <table class="table table-striped table-hover" id = "solicitudes" name = "solicitudes">
-                            
-                            <tr>
-                                <td>Publicaci&oacute;n N°</td>                 
-                                <td>T&iacute;tulo</td>
-                                <td>Usuario</td>
-                                <td>Email</td>
-                                <td>Fecha inicio alquiler</td>
-                                <td>Fecha fin alquiler</td>
-                                <td>Costo/d&iacute;a</td>
-                                <td colspan="3">Detalle de publicaci&oacute;n</td>                              
-                            </tr>
-
-                            <?php while($fila = $resultadoSolicitud->fetch_array(MYSQLI_ASSOC)) { 
-                                extract($fila);
-                                
-                            ?>
-                                <tr id = "solicitud_fila_<?php echo $id_publicacion;?>">    
-                                    <td><?php echo $id_publicacion ?></td>                              
-                                    <td><?php echo $titulo ?></td>
-                                    <td><?php echo $nombre . " ". $apellido  ?></td>
-                                    <td><?php echo $email  ?></td>
-                                    <td><?php echo $fecha_inicio ?></td>
-                                    <td><?php echo $fecha_fin ?></td>
-                                    <td><?php echo $costo ?></td>
-                                    <td><a href="detallePublicacion.php?id=<?php echo $id_publicacion; ?> " target = "_blank"> Ver detalle
-                                            <img src="../static/imagenes/redes/box-arrow-up-right.svg" alt="abrir en otra ventana">
-                                        </a>
-                                    </td>
-                                    <td>                         
-                                        <button type="button" class="btn btn-secondary" id="btn_submit_form_evento"
-                                            onclick = "confirmarPublicacion(<?php echo $id . ',' . $id_usuario . ',1' . ',' . $id_publicacion;?>)" 
-                                            name = "aprobar"> Aprobar 
-                                        </button>                            
-                                    </td>
-                                    <td>                    
-                                        <button type="button" class="btn btn-secondary" id="btn_submit_form_evento"
-                                            onclick = "confirmarPublicacion(<?php echo $id . ',' . $id_usuario . ',2'. ',' . $id_publicacion;?>)"
-                                            name = "rechazar">Rechazar
-                                        </button>                            
-                                    </td>                           
-                                </tr>
-                            <?php                        
-                            }  
-                            ?>
-                        </table>
-                    </div>
-                    <span id = "resultadoSol"> Nada aqui </span>
+            <div class="container-fluid" >            
+                <div class=" col-md-12 text-center" style=" margin-top: 20px;">
+                    <h4> Solicitudes </h4>
                 </div>
-            </section>
+                <div class = "table-responsive">
+                    <table class="table table-striped table-hover" id = "solicitudes" name = "solicitudes">
+                        
+                        <tr>
+                            <td>Publicaci&oacute;n N°</td>                 
+                            <td>T&iacute;tulo</td>
+                            <td>Usuario</td>
+                            <td>Email</td>
+                            <td>Fecha inicio alquiler</td>
+                            <td>Fecha fin alquiler</td>
+                            <td>Costo/d&iacute;a</td>
+                            <td colspan="3">Detalle de publicaci&oacute;n</td>                              
+                        </tr>
+
+                        <?php while($fila = $resultadoSolicitud->fetch_array(MYSQLI_ASSOC)) { 
+                            extract($fila);
+                            
+                        ?>
+                            <tr id = "solicitud_fila_<?php echo $id_publicacion;?>">    
+                                <td><?php echo $id_publicacion ?></td>                              
+                                <td><?php echo $titulo ?></td>
+                                <td><?php echo $nombre . " ". $apellido  ?></td>
+                                <td><?php echo $email  ?></td>
+                                <td><?php echo $fecha_inicio ?></td>
+                                <td><?php echo $fecha_fin ?></td>
+                                <td><?php echo $costo ?></td>
+                                <td><a href="detallePublicacion.php?id=<?php echo $id_publicacion; ?> " target = "_blank"> Ver detalle
+                                        <img src="../static/imagenes/redes/box-arrow-up-right.svg" alt="abrir en otra ventana">
+                                    </a>
+                                </td>
+                                <td>                         
+                                    <button type="button" class="btn btn-secondary" id="btn_submit_form_evento"
+                                        onclick = "confirmarPublicacion(<?php echo $id . ',' . $id_usuario . ',1' . ',' . $id_publicacion;?>)" 
+                                        name = "aprobar"> Aprobar 
+                                    </button>                            
+                                </td>
+                                <td>                    
+                                    <button type="button" class="btn btn-secondary" id="btn_submit_form_evento"
+                                        onclick = "confirmarPublicacion(<?php echo $id . ',' . $id_usuario . ',2'. ',' . $id_publicacion;?>)"
+                                        name = "rechazar">Rechazar
+                                    </button>                            
+                                </td>                           
+                            </tr>
+                        <?php                        
+                        }  
+                        ?>
+                    </table>
+                </div>
+                <span id = "resultadoSol"> Nada aqui </span>
+            </div>
         </div>
+
         <div id="tabs-4">
-            <section class = "sectionPrincipal">
-                <div class="container w-100" >            
-                    <div class=" col-md-12 text-center" style=" margin-top: 20px;">
-                        <h4> Reseñas/Mis Publicaciones </h4>
-                    </div>
-                    <div class = "table-responsive">
-                        <table class="table table-striped table-hover" id = "misAlquileres" name = "misAlquileres">
-                            
-                            <tr>
-                                <th>T&iacute;tulo</th>
-                                <th>Ubicaci&oacute;n</th>
-                                <th>Cliente</th>
-                                <th>Email</th>
-                                <th>Comentario/Cliente</th>
-                                <th colspan="3">Responder Comentario</th>                              
-                            </tr>
-
-                            <?php while($fila = $resultadoResena->fetch_array(MYSQLI_ASSOC)) { 
-                                extract($fila);
-                                $habilitado = "enable";                           
-                                if($respuesta != NULL && $respuesta !=""){
-                                    $habilitado = "disabled";
-                                    
-                                }
-                            ?>
-                                <tr>                                  
-                                    <td><?php echo $titulo ?></td>
-                                    <td><?php echo $ubicacion ?></td>
-                                    <td><?php echo $nombre . " " . $apellido ?></td>
-                                    <td><?php echo $email ?></td>
-                                    <td><?php echo $comentario ?></td>
-                                    <td>
-                                    </td>
-                                    <td>     
-                                        <div class= "row g-0  " style=" border-radius:10px; margin-bottom: 20px;">  
-                                            <textarea class="form-control" id="responderRes" name="responderRes" 
-                                            rows="2" style = "width: 500px" <?php echo $habilitado?> 
-                                           ><?php if(isset($respuesta)) echo $respuesta?></textarea>
-                                        </div>
-                                    </td>
-
-                                    <td>                    
-                                        <button type="button" class="btn btn-secondary" id="enviarResena"
-                                            onclick = "responderResena(<?php echo $id ?>)"  name = "enviarResena" 
-                                            <?php echo $habilitado?>>Enviar
-                                        </button>                            
-                                    </td>    
-                                            
-                                </tr>
-                            <?php                        
-                            }  
-                            ?>
-                        </table>
-                    </div>
-                    <span id = "resultadoRespuestaResena"> Nada aqui </span>
+            <div class="container-fluid" >            
+                <div class=" col-md-12 text-center" style=" margin-top: 20px;">
+                    <h4> Reseñas/Mis Publicaciones </h4>
                 </div>
-            </section>
+                <div class = "table-responsive">
+                    <table class="table table-striped table-hover" id = "misAlquileres" name = "misAlquileres">
+                        
+                        <tr>
+                            <th>T&iacute;tulo</th>
+                            <th>Ubicaci&oacute;n</th>
+                            <th>Cliente</th>
+                            <th>Email</th>
+                            <th>Comentario/Cliente</th>
+                            <th colspan="3">Responder Comentario</th>                              
+                        </tr>
+
+                        <?php while($fila = $resultadoResena->fetch_array(MYSQLI_ASSOC)) { 
+                            extract($fila);
+                            $habilitado = "enable";                           
+                            if($respuesta != NULL && $respuesta !=""){
+                                $habilitado = "disabled";
+                                
+                            }
+                        ?>
+                            <tr>                                  
+                                <td><?php echo $titulo ?></td>
+                                <td><?php echo $ubicacion ?></td>
+                                <td><?php echo $nombre . " " . $apellido ?></td>
+                                <td><?php echo $email ?></td>
+                                <td><?php echo $comentario ?></td>
+                                <td>
+                                </td>
+                                <td>     
+                                    <div class= "row g-0  " style=" border-radius:10px; margin-bottom: 20px;">  
+                                        <textarea class="form-control" id="responderRes" name="responderRes" 
+                                        rows="2" style = "width: 500px" <?php echo $habilitado?> 
+                                        ><?php if(isset($respuesta)) echo $respuesta?></textarea>
+                                    </div>
+                                </td>
+
+                                <td>                    
+                                    <button type="button" class="btn btn-secondary" id="enviarResena"
+                                        onclick = "responderResena(<?php echo $id ?>)"  name = "enviarResena" 
+                                        <?php echo $habilitado?>>Enviar
+                                    </button>                            
+                                </td>    
+                                        
+                            </tr>
+                        <?php                        
+                        }  
+                        ?>
+                    </table>
+                </div>
+                <span id = "resultadoRespuestaResena"> Nada aqui </span>
+            </div>
         </div>
-    </div>
- 
-    
-
-    
-
-   
+    </div>  
 
     <?php include "bd/cerrar_conexion.php"; ?>
     <!--Footer-->

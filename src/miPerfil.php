@@ -161,12 +161,12 @@
         }
             
         //////////////////////Conculto para eliminar todos los check existentes
-        $consulta = "DELETE  FROM etiqueta_user
+        $consulta = "DELETE  FROM interes_user
                     WHERE id_usuario = ?";
 
         $sentencia = $conexion->stmt_init();
         if(!$sentencia->prepare($consulta)) {
-            $mensaje = $mensaje . "fallo la preparacion de la consulta eliminar etiqueta de la db <br>";
+            $mensaje = $mensaje . "fallo la preparacion de la consulta eliminar interes de la db <br>";
             $valido = false;
         } else{
             $sentencia->bind_param("s",$_SESSION['id']);
@@ -176,11 +176,11 @@
         
         ///////////////////////Insertamos las nuevas opciones seleccionadas//////////////
         if(isset($interes)){
-            foreach($interes as $id_etiqueta){
-                echo $_SESSION['id']. "y " .$id_etiqueta;
+            foreach($interes as $id_interes){
+                echo $_SESSION['id']. "y " .$id_interes;
                                             
-                $consulta = "INSERT  INTO etiqueta_user
-                            (id_usuario, id_etiqueta)
+                $consulta = "INSERT  INTO interes_user
+                            (id_usuario, id_interes)
                             VALUES (?, ?)"; 
 
                 $sentencia = $conexion->stmt_init();
@@ -191,12 +191,12 @@
 
                     $valido = false;
                 } else{
-                    $sentencia->bind_param("ss", $_SESSION['id'], $id_etiqueta);
+                    $sentencia->bind_param("ss", $_SESSION['id'], $id_interes);
 
                     $sentencia->execute();
                     
                     if($sentencia->affected_rows <= 0) {
-                        $mensaje = $mensaje ."error guardando etiquetas en la bd<br>"; 
+                        $mensaje = $mensaje ."error guardando intereses en la bd<br>"; 
                         $valido = false;
                     }
                     $sentencia->close();   
@@ -252,38 +252,38 @@
 
     /////////////////////////Consultar para tarer todas los intereses del usuario////////////////////////////////////
     $consulta = "SELECT *
-                FROM etiqueta";
+                FROM interes";
             
-    $sentencia_etiqueta = $conexion->stmt_init();
+    $sentencia_interes = $conexion->stmt_init();
 
-    if(!$sentencia_etiqueta->prepare($consulta)){
+    if(!$sentencia_interes->prepare($consulta)){
 
         $mensaje = $mensaje. " Fallo la preparacion de la consulta para buscar nombre de los intereses <br>";
         $valido = false;
         
     } else {            
-        //$sentencia_etiqueta->bind_param("s", $_SESSION['id']);
-        $sentencia_etiqueta->execute();
-        $resultado_etiqueta = $sentencia_etiqueta->get_result();
-        $sentencia_etiqueta->close();
+        //$sentencia_interes->bind_param("s", $_SESSION['id']);
+        $sentencia_interes->execute();
+        $resultado_interes = $sentencia_interes->get_result();
+        $sentencia_interes->close();
     }
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    //////////////////////////////////Traer la relacion entra las etiquetas y el usuario//////////////////////////////
-    $consulta = "SELECT id_etiqueta
-                    FROM etiqueta_user
+    //////////////////////////////////Traer la relacion entra las intereses y el usuario//////////////////////////////
+    $consulta = "SELECT id_interes
+                    FROM interes_user
                     WHERE id_usuario = ?";
 
-    $sentenciaEtiquetaUsuario = $conexion->stmt_init();
-    if(!$sentenciaEtiquetaUsuario->prepare($consulta)){
+    $sentenciaInteresUsuario = $conexion->stmt_init();
+    if(!$sentenciaInteresUsuario->prepare($consulta)){
         $mensaje = $mensaje. " Fallo la preparacion de la consulta para buscar nombre de los intereses <br>";
         $valido = false;
         
     } else {            
-        $sentenciaEtiquetaUsuario->bind_param("s", $_SESSION['id']);
-        $sentenciaEtiquetaUsuario->execute();
-        $resultadoEtiquetaUsuario= $sentenciaEtiquetaUsuario->get_result();
-        $sentenciaEtiquetaUsuario->close();
+        $sentenciaInteresUsuario->bind_param("s", $_SESSION['id']);
+        $sentenciaInteresUsuario->execute();
+        $resultadoInteresUsuario= $sentenciaInteresUsuario->get_result();
+        $sentenciaInteresUsuario->close();
     }
         
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -326,23 +326,23 @@
             <div style="display:flex;width:100%; justify-content:flex-end;padding-bottom:15px; padding-right:10px; ">
                 <div>
                     <?php
-                                    if($es_verificado==1){
-                                        echo"<img src=\"../static/imagenes/redes/cc-squareVerificado.svg\"alt=\"cuenta verificada\" 
-                                        title =\"cuenta verificada\" style=\"float: right;\">";
-                                    } else {
-                                        echo"<img src=\"../static/imagenes/redes/cc-square.svg\"alt=\"cuenta no verificada\" 
-                                        title =\"cuenta verificada\" style=\"float: right;\">";
-                                    }
-                                ?>
+                        if($es_verificado==1){
+                            echo"<img src=\"../static/imagenes/redes/cc-squareVerificado.svg\"alt=\"cuenta verificada\" 
+                            title =\"cuenta verificada\" style=\"float: right;\">";
+                        } else {
+                            echo"<img src=\"../static/imagenes/redes/cc-square.svg\"alt=\"cuenta no verificada\" 
+                            title =\"cuenta verificada\" style=\"float: right;\">";
+                        }
+                    ?>
 
                 </div>
             </div>
             <form style="display:flex; flex-direction:column;  " id="formulario" method="post" action="miPerfil.php"
                 enctype="multipart/form-data">
 
-                <div style=" max-width:100%; display:flex; position:relative; flex-wrap:wrap; aling-items:center; justify-content:center;">
+                <div style=" max-width:100%; display:flex; position:relative; flex-wrap:wrap; aling-items:center; justify-content:center; align-item:flex-end;">
 
-                    <div style="margin: 7px;  display:flex;flex-direction:column; flex:3; min-width:250px; max-width: 350px; margin-right: 70px">
+                    <div style=" align-items:center; display:flex;flex-direction:column; flex:3; min-width:250px; width:100%; ">
 
                         <div class="card" style="width: 100%;">
                             <button type="button" class="btn-close position-absolute top-0 end-0 m-2"
@@ -361,7 +361,12 @@
                                 <input type="file" class="form-control form-control-sm" id="formFileSm" name="foto">
                             </div>
                         </div>
-
+                        <div style=" margin-top:7px; margin-bottom:7px; flex:1; min-width:250px; width:100%; ">
+                        <label for="fechaNacimiento" class="form-label">Fecha de nacimiento</label>
+                        <input type="date" class="form-control" id="fechaNacimiento" name="fechaNacimiento"
+                            value="<?php if(isset($fecha_nacimiento)) echo $fecha_nacimiento;?>" min="16" max="150"
+                            required>
+                        </div>
                     </div>
 
                     <div style="display:flex; flex:7; flex-wrap:wrap; position:relative; aling-items:flex-end; min-width:300px;">
@@ -381,6 +386,26 @@
                                     required>
                             </div>
 
+                            <div style="padding:7px; min-width:250px; ">
+                        <label for="codPais" class="form-label">Cod-Pais</label>
+                        <select id="codPais" class="form-select" name="codPais" required>
+                            <option value="">Seleccione</option>
+                            <?php
+                                
+                                    while($fila = $resultado_codigo->fetch_array(MYSQLI_ASSOC)){
+                            
+                                        echo "<option value=\"" . $fila['codigo'] . "\"";
+
+                                        if (isset($fila['codigo']) && $cod_pais === $fila['codigo']) {
+                                            echo " selected";
+                                        }
+                                        
+                                        echo ">" . $fila['pais'] . "</option>";
+                                    }
+                                    ?>
+
+                        </select>
+                    </div>
 
 
                         </div>
@@ -403,44 +428,14 @@
                                     </option>
                                 </select>
                             </div>
-                        </div>
-                    </div>
-
-                </div>
-                
-                <div style="display:flex; flex:1; flex-wrap:wrap; width:100%!important;">
-                    <div style="padding:7px; flex:1; min-width:250px; ">
-                        <label for="fechaNacimiento" class="form-label">Fecha de nacimiento</label>
-                        <input type="date" class="form-control" id="fechaNacimiento" name="fechaNacimiento"
-                            value="<?php if(isset($fecha_nacimiento)) echo $fecha_nacimiento;?>" min="16" max="150"
-                            required>
-                    </div>
-
-                    <div style="padding:7px; flex:1;  min-width:250px; ">
-                        <label for="codPais" class="form-label">Cod-Pais</label>
-                        <select id="codPais" class="form-select" name="codPais" required>
-                            <option value="">Seleccione</option>
-                            <?php
-                                
-                                    while($fila = $resultado_codigo->fetch_array(MYSQLI_ASSOC)){
                             
-                                        echo "<option value=\"" . $fila['codigo'] . "\"";
-
-                                        if (isset($fila['codigo']) && $cod_pais === $fila['codigo']) {
-                                            echo " selected";
-                                        }
-                                        
-                                        echo ">" . $fila['pais'] . "</option>";
-                                    }
-                                    ?>
-
-                        </select>
-                    </div>
-
-                    <div style="padding:7px; flex:1; min-width:250px;  ">
+                    <div style="padding:7px; ">
                         <label for="telefono" class="form-label">Tel&eacute;fono</label>
                         <input type="number" class="form-control" id="telefono" name="telefono" min="1000000000"
                             maxlength="9999999999" value="<?php if(isset($telefono)) echo $telefono;?>" required>
+                    </div>
+
+                        </div>
                     </div>
 
                 </div>
@@ -461,17 +456,17 @@
                         <div class="row" style="margin-bottom: 30px">
 
                             <?php      
-$etiquetaSele = $resultadoEtiquetaUsuario->fetch_all(MYSQLI_ASSOC);
+$interesSele = $resultadoInteresUsuario->fetch_all(MYSQLI_ASSOC);
 
- $etiquetas = array_column($etiquetaSele, "id_etiqueta");
-     $etiquetas = array_combine($etiquetas, $etiquetas);
-  while($fila = $resultado_etiqueta->fetch_array(MYSQLI_ASSOC)){                         
+ $intereses = array_column($interesSele, "id_interes");
+     $intereses = array_combine($intereses, $intereses);
+  while($fila = $resultado_interes->fetch_array(MYSQLI_ASSOC)){                         
   ?>
                             <div class="col-md-2">
                                 <div class="form-check">
                                     <input class="form-check-input" type="checkbox" name="interes[]"
                                         id="flexCheckChecked" value=<?php echo $fila['id']; ?>
-                                        <?php if(isset($etiquetas[$fila['id']])) echo "checked"; ?>>
+                                        <?php if(isset($intereses[$fila['id']])) echo "checked"; ?>>
                                     <label class="form-check-label" for="flexCheckChecked">
                                         <?php echo $fila['nombre'] ?>
                                     </label>

@@ -4,7 +4,6 @@
     if(!isset($_SESSION['id'])){
         header("Location: index.php");
         exit;
-        var_dump($_SESSION);
     }
     
     $valido = true;
@@ -19,10 +18,10 @@
         header("Location: error.php?mensaje=" . urlencode($mensajeError));
             
     }
-    //var_dump($_POST);
+
     extract($_POST);
 
-        $consulta = "UPDATE verificacion_cuenta
+    $consulta = "UPDATE verificacion_cuenta
                 SET estado = ?, fecha_vencimiento = ?, fecha_revision = CURRENT_TIMESTAMP()
                 WHERE id = ?";
     $sentencia = $conexion->stmt_init();
@@ -35,26 +34,20 @@
         if($sentencia->affected_rows <= 0) {
             echo "error guardando los datos de verificacion de cuenta <br>";     
         } else {             
-            echo "solicitud de verificacion actualizada con éxito en bd verificacion de solicitudes. <br>";
+            //echo "solicitud de verificacion actualizada con éxito en bd verificacion de solicitudes. <br>";
         }
         $sentencia->close(); 
     }  
-var_dump($_POST);
+
     $consulta = "UPDATE user
                 SET es_verificado = ?
                 WHERE id = ?";
     $sentencia2 = $conexion->stmt_init();
     if(!$sentencia2->prepare($consulta)){
-        echo "error preparando la consulta para actualizar datos. <br>";
+        //echo "error preparando la consulta para actualizar datos. <br>";
     } else {
         $sentencia2 ->bind_param("ss", $estado, $idUsuario );
         $sentencia2->execute();
-      
-        if($sentencia2->affected_rows <= 0) {
-            echo "error guardando el estado de verificacion del usuario <br>";     
-        } else {            
-            echo "solicitud actualizada con éxito en bd user. <br>";  
-        }
         $sentencia2->close();
     }
     

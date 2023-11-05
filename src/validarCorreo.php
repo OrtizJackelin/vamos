@@ -114,7 +114,7 @@
     </script>
 </head>
 
-<body style=" display:flex; flex-direction:column;height:100%;">
+<body style=" display:flex; flex-direction:column;height:100%;" class="background2">
     <header>
         <?php include("barraDeNavegacion.php"); ?>
     </header>
@@ -139,8 +139,8 @@
 
 
                     <div class="col-12 ">
-                        <button type="submit" class="btn btn-secondary" id="enviar
-                        " name="enviar" style = "width: 100px">Validar</button>
+                        <button type="submit" class="btn btn-secondary" id="enviar" 
+                        name="enviar" style = "width: 100px">Validar</button>
                     </div>
 
                 </form><br>

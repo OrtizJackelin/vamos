@@ -56,11 +56,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="../static/css/bootstrap-icons.css">
     <link href="../static/css/bootstrap.min.css" rel="stylesheet"
-    integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="../static/css/jquery-ui.min.css">
+    <link rel="stylesheet" href="../static/css/jquery-ui.theme.css">
     <script type = "text/javascript" src = "../static/js/code.jquery.com_jquery-3.7.1.min.js"></script>
+    <script type = "text/javascript" src = "../static/js/jquery-ui.js"></script>
+    <script type = "text/javascript" src = "../static/js/jquery-ui.min.js"></script>
     <script src="../static/js/flatpickr.js"></script>
     <link rel="stylesheet" href="../static/css/flatpickr.min.css">
     <script> 
+            $( function() {
+                $( "#tabs" ).tabs();
+            } );
         document.addEventListener("DOMContentLoaded", () => {
 
             // Fecha inicial 
@@ -173,149 +180,153 @@
    
 </head>
 
-<body>
+<body class ="background2">
     <header>
         <?php include("barraDeNavegacion.php"); ?><br><br>
     </header>
 
-    <section class = "sectionPrincipal">
-        <div class="container w-100" >    
-            
-            <div class=" col-md-12 text-center" style=" margin-top: 20px;">
-                <h4> Solicitudes: Verificaci&oacute;n de Cuentas</h4>
-            </div>
-            <div class = "table-responsive">
-                <table class="table table-striped table-hover" id = "solicitudVerificacion" name = "solicitudVerificacion">
-                    
-                    <tr>
-                        <td>Solicitud N°</td>
-                        <td>Usuario</td>
-                        <td>Documento</td>
-                        <td>Comentario De Usuario</td>
-                        <td>Fecha De Solicitud</td>
-                        <td colspan="3">Fecha De Vencimiento</td>
-                              
-                    </tr>
-                    <?php while($fila = $resultado->fetch_array(MYSQLI_ASSOC)) { 
-                        extract($fila);
-                        $consulta = "SELECT nombre
-                        FROM user
-                        WHERE id = ?";
-                    
-                        $sentencia = $conexion->stmt_init();
-                        if(!$sentencia->prepare($consulta)){
-                            $mensaje = $mensaje. "fallo la preparción". $sentencia->error . "<br>";
-                        } else {
-                            $sentencia->bind_param("s", $id_usuario);
-                            $sentencia->execute();
-                            $resultado = $sentencia->get_result();
-                            $sentencia->close();
-                            if($filaNombre = $resultado->fetch_array(MYSQLI_ASSOC)){ ?>
-                                <tr id="verificacion_fila_<?php echo $id; ?>">  
-                                    <td><?php echo $id ?></td>                                
-                                    <td><?php echo $filaNombre['nombre'] ?></td>
-                                    <td><img src=../static/imagenes/documentoUsuarios/<?php echo $documento ?>
-                                            class="card-img-top" alt="documento">
-                                    </td>
-                                    <td><?php echo $comentario ?></td>
-                                    <td><?php echo $fecha_solicitud ?></td>
-                                    <td>
-                                        <label for="fechaVencimiento" class="form-label"></label>
-                                        <input type="text" class="form-control" id="fechaVencimiento" name= "fechaVencimiento" 
-                                        min="16" max="120" required>                                      
-                                    </td>
-                                    <td>
-                                        <button type="button" class="btn btn-secondary" id="btn_submit_form_evento"
-                                            onclick = "confirmarVerificacion(<?php echo $id . ',' . $id_usuario . ',1'; ?>)" 
-                                            name = "aprobar"> Aprobar 
-                                        </button>
-                                    </td>
-                                    <td>
-                                        <div class="col-12 ">
+    <div class="todoElAlto" id="tabs">
+        <ul>
+            <li><a href="#tabs-1">Solicitudes: Verificaci&oacute;n de Cuentas</a></li>
+            <li><a href="#tabs-2">Solicitudes: Pubicaciones</a></li>
+        </ul>
+        <div id="tabs-1">  
+            <div class="container-fluid" >               
+                <div class=" col-md-12 text-center" style=" margin-top: 20px;">
+                    <h4> Solicitudes: Verificaci&oacute;n de Cuentas</h4>
+                </div>
+                <div class = "table-responsive">
+                    <table class="table table-striped table-hover" id = "solicitudVerificacion" name = "solicitudVerificacion">
+                        
+                        <tr>
+                            <td>Solicitud N°</td>
+                            <td>Usuario</td>
+                            <td>Documento</td>
+                            <td>Comentario De Usuario</td>
+                            <td>Fecha De Solicitud</td>
+                            <td colspan="3">Fecha De Vencimiento</td>
+                                    
+                        </tr>
+                        <?php while($fila = $resultado->fetch_array(MYSQLI_ASSOC)) { 
+                            extract($fila);
+                            $consulta = "SELECT nombre
+                            FROM user
+                            WHERE id = ?";
+                        
+                            $sentencia = $conexion->stmt_init();
+                            if(!$sentencia->prepare($consulta)){
+                                $mensaje = $mensaje. "fallo la preparción". $sentencia->error . "<br>";
+                            } else {
+                                $sentencia->bind_param("s", $id_usuario);
+                                $sentencia->execute();
+                                $resultado = $sentencia->get_result();
+                                $sentencia->close();
+                                if($filaNombre = $resultado->fetch_array(MYSQLI_ASSOC)){ ?>
+                                    <tr id="verificacion_fila_<?php echo $id; ?>">  
+                                        <td><?php echo $id ?></td>                                
+                                        <td><?php echo $filaNombre['nombre'] ?></td>
+                                        <td><img src=../static/imagenes/documentoUsuarios/<?php echo $documento ?>
+                                                class="card-img-top" alt="documento">
+                                        </td>
+                                        <td><?php echo $comentario ?></td>
+                                        <td><?php echo $fecha_solicitud ?></td>
+                                        <td>
+                                            <label for="fechaVencimiento" class="form-label"></label>
+                                            <input type="text" class="form-control" id="fechaVencimiento" name= "fechaVencimiento" 
+                                            min="16" max="120" required>                                      
+                                        </td>
+                                        <td>
                                             <button type="button" class="btn btn-secondary" id="btn_submit_form_evento"
-                                            onclick = "confirmarVerificacion(<?php echo $id . ',' . $id_usuario . ',2 '; ?>)">Rechazar</button>
-                                        </div>
-                                    </td>
-                                
-                                </tr>
-                            <?php   
+                                                onclick = "confirmarVerificacion(<?php echo $id . ',' . $id_usuario . ',1'; ?>)" 
+                                                name = "aprobar"> Aprobar 
+                                            </button>
+                                        </td>
+                                        <td>
+                                            <div class="col-12 ">
+                                                <button type="button" class="btn btn-secondary" id="btn_submit_form_evento"
+                                                onclick = "confirmarVerificacion(<?php echo $id . ',' . $id_usuario . ',2 '; ?>)">Rechazar</button>
+                                            </div>
+                                        </td>
+                                    
+                                    </tr>
+                                <?php   
+                                }
                             }
-                        }
-                    }   ?>
-                </table>
+                        }   ?>
+                    </table>
+                </div>
+                <span id = "resultado"></span>
+                <input type = "hidden" id = "fechaInicio" name = "fechaInicio" >
+                <input type = "hidden" id = "fechaFin" name = "fechaFin">
             </div>
-               
-            <span id = "resultado"> Nada aqui </span>
-            <input type = "hidden" id = "fechaInicio" name = "fechaInicio" >
-            <input type = "hidden" id = "fechaFin" name = "fechaFin">
-
-        </div>       
-    </section>
-
-    <section class = "sectionPrincipal">
-        <div class="container w-100" >    
-            
-            <div class=" col-md-12 text-center" style=" margin-top: 20px;">
-                <h4> Solicitudes: Pubicaciones </h4>
-            </div>
-            <div class = "table-responsive">
-                <table class="table table-striped table-hover" id = "solicitudPublicacion" name = "solicitudPublicacion">
-                    
-                    <tr>
-                        <td>Publicaci&oacute;n N°</td>                    
-                        <td>Usuario</td>
-                        <td>T&iacute;tulo de Publicaci&oacute;n</td>
-                        <td>Fecha De Solicitud</td>
-                        <td colspan="3">Detalle De Publicaci&oacute;n</td>
-                 
-                    </tr>
-                    <?php while($fila = $resultadoPublicacion->fetch_array(MYSQLI_ASSOC)) { 
-                        extract($fila);
-                        $consulta = "SELECT nombre
-                        FROM user
-                        WHERE id = ?";
-                    
-                        $sentencia = $conexion->stmt_init();
-                        if(!$sentencia->prepare($consulta)){
-                            $mensaje = $mensaje. "fallo la preparción". $sentencia->error . "<br>";
-                        } else {
-                            $sentencia->bind_param("s", $id_usuario);
-                            $sentencia->execute();
-                            $resultado = $sentencia->get_result();
-                            $sentencia->close();
-                            if($filaNombre = $resultado->fetch_row()){ ?>
-                                <tr id="publicacion_fila_<?php echo $id; ?>">  
-                                    <td><?php echo $id ?></td>                                
-                                    <td><?php echo $filaNombre[0] ?></td>
-                                    <td><?php echo $titulo ?></td>
-                                    <td><?php echo $fecha_solicitud ?></td>
-                                    <td><a href="detallePublicacion.php?id=<?php echo $id; ?> " target = "_blank"> Ver detalle
-                                        <img src="../static/imagenes/redes/box-arrow-up-right.svg" alt="abrir en otra ventana"></a></td>
-                                    <td>
-                                        <div class="col-12 ">
-                                            <button type="button" class="btn btn-secondary" id="btn_submit_form_evento"
-                                            onclick = "confirmarPublicacion(<?php echo $id . ',' . $id_usuario . ',1'; ?>)" 
-                                            name = "aprobar"> Aprobar </button>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="col-12 ">
-                                            <button type="button" class="btn btn-secondary" id="btn_submit_form_evento"
-                                            onclick = "confirmarPublicacion(<?php echo $id . ',' . $id_usuario . ',2'; ?>)">Rechazar</button>
-                                        </div>
-                                    </td>
-                                
-                                </tr>
-                            <?php   
-                            }
-                        }
-                    } ?>
-                </table>
-            </div>
-            <span id = "resultadoVerificarPublicacion"> Nada aqui </span>
         </div>
-    </section>
+            
 
+        <div id="tabs-2"> 
+            <div class="container-fluid" >    
+                
+                <div class=" col-md-12 text-center" style=" margin-top: 20px;">
+                    <h4> Solicitudes: Pubicaciones </h4>
+                </div>
+                <div class = "table-responsive">
+                    <table class="table table-striped table-hover" id = "solicitudPublicacion" name = "solicitudPublicacion">
+                        
+                        <tr>
+                            <td>Publicaci&oacute;n N°</td>                    
+                            <td>Usuario</td>
+                            <td>T&iacute;tulo de Publicaci&oacute;n</td>
+                            <td>Fecha De Solicitud</td>
+                            <td colspan="3">Detalle De Publicaci&oacute;n</td>
+                        
+                        </tr>
+                        <?php while($fila = $resultadoPublicacion->fetch_array(MYSQLI_ASSOC)) { 
+                            extract($fila);
+                            $consulta = "SELECT nombre
+                            FROM user
+                            WHERE id = ?";
+                        
+                            $sentencia = $conexion->stmt_init();
+                            if(!$sentencia->prepare($consulta)){
+                                $mensaje = $mensaje. "fallo la preparción". $sentencia->error . "<br>";
+                            } else {
+                                $sentencia->bind_param("s", $id_usuario);
+                                $sentencia->execute();
+                                $resultado = $sentencia->get_result();
+                                $sentencia->close();
+                                if($filaNombre = $resultado->fetch_row()){ ?>
+                                    <tr id="publicacion_fila_<?php echo $id; ?>">  
+                                        <td><?php echo $id ?></td>                                
+                                        <td><?php echo $filaNombre[0] ?></td>
+                                        <td><?php echo $titulo ?></td>
+                                        <td><?php echo $fecha_solicitud ?></td>
+                                        <td><a href="detallePublicacion.php?id=<?php echo $id; ?> " target = "_blank"> Ver detalle
+                                            <img src="../static/imagenes/redes/box-arrow-up-right.svg" alt="abrir en otra ventana"></a></td>
+                                        <td>
+                                            <div class="col-12 ">
+                                                <button type="button" class="btn btn-secondary" id="btn_submit_form_evento"
+                                                onclick = "confirmarPublicacion(<?php echo $id . ',' . $id_usuario . ',1'; ?>)" 
+                                                name = "aprobar"> Aprobar </button>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="col-12 ">
+                                                <button type="button" class="btn btn-secondary" id="btn_submit_form_evento"
+                                                onclick = "confirmarPublicacion(<?php echo $id . ',' . $id_usuario . ',2'; ?>)">Rechazar</button>
+                                            </div>
+                                        </td>
+                                    
+                                    </tr>
+                                <?php   
+                                }
+                            }
+                        } ?>
+                    </table>
+                </div>
+                <span id = "resultadoVerificarPublicacion"></span>
+            </div>
+        </div>
+    </div>
+ 
     <?php include "bd/cerrar_conexion.php"; ?>
     <!--Footer-->
     <footer>

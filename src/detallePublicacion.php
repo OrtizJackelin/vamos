@@ -113,7 +113,7 @@
             if(isset($_SESSION['esVerificado']) && $_SESSION['esVerificado'] == 1){
 
                 $consulta = "SELECT * 
-                            FROM alquiler
+                            FROM alquiler  
                             WHERE id_usuario = ? 
                             AND id_publicacion = ?
                             AND aprobado = 1
@@ -121,7 +121,7 @@
 
                 $sentencia = $conexion->stmt_init();
                 if(!$sentencia->prepare($consulta)){
-                    echo "fallo la preparacion de la consulta para buscar alquileres <br>";
+                    //echo "fallo la preparacion de la consulta para buscar alquileres <br>";
                 }
                 else{               
                     $sentencia->bind_param("ss", $_SESSION['id'], $_GET['id']);
@@ -136,20 +136,45 @@
                                     AND id_usuario = ?";
                         $sentencia = $conexion->stmt_init();
                         if(!$sentencia->prepare($consulta)){
-                            echo "fallo la preparacion de la consulta para consulta reseña. <br>";
+                           // echo "fallo la preparacion de la consulta para consulta reseña. <br>";
                         }
                         else{                
-                            $sentencia->bind_param("ss", $_SESSION['id'], $_GET['id']);
+                            $sentencia->bind_param("ss", $_GET['id'], $_SESSION['id']);
                             $sentencia->execute();
                             $resultadoResena = $sentencia->get_result();
                             $sentencia->close();
                             if($resultadoResena->num_rows == 0){
-                                echo "no consiguio reseña";
+                               // echo "no consiguio reseña";
                                 $visible = "block";
                             }
                         }
                     }
                 }
+            } else {
+                $consulta = "SELECT aprobado
+                            FROM alquiler
+                            WHERE id_usuario = ?
+                            AND (aprobado = 2
+                            OR fecha_fin < CURRENT_TIMESTAMP)
+                            ORDER BY fecha_fin DESC LIMIT 1";
+
+                $sentencia = $conexion->stmt_init();
+                if(!$sentencia->prepare($consulta)){
+                    //echo "fallo la preparacion de la consulta para consulta reseña. <br>";
+                }
+                else{                
+                    $sentencia->bind_param("s", $_SESSION['id']);
+                    $sentencia->execute();
+                    $resultadoHabilitarAlquiler= $sentencia->get_result();
+                    $sentencia->close();
+                    if($resultadoHabilitarAlquiler->num_rows != 0){
+                       // echo "no consiguio reseña";
+                        $habilitado = "disabled";
+                        
+                    }
+                   // var_dump($resultadoHabilitarAlquiler);
+                }
+
             }
 
             $consulta = "SELECT reseña.*, user.nombre, user.apellido
@@ -275,7 +300,9 @@
                     var montoTotal = diferenciaEnDias * <?php echo$costo?>;
                     
                     // Mostrar la diferencia
-                    $("#montoTotal").val(montoTotal);
+                    // Formatear el número con dos decimales y separadores de miles
+                    const numeroFormateado = montoTotal.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 });
+                    $("#montoTotal").val(numeroFormateado);
 
                 }
             }
@@ -334,7 +361,7 @@
             var parametros = {
                 "comentario" : document.getElementById("comentar").value,
                 "calificacion" : valorSeleccionado, 
-                "idUsuario" : <?php echo $nombre ?>,
+                "idUsuario" : <?php echo $_SESSION['id'] ?>,
                 "idPublicacion" : <?php echo $_GET['id'] ?>
             };
             $.ajax({
@@ -517,24 +544,24 @@
                         <div class="col-md-12">
                             <label for="rangoFechas" class="form-label"><b>Seleccione Rango De Fecha: </b></label>
                             <input type="text" class="form-control" id="rangoFechas" name= "rangoFechas" 
-                            min="16" max="130" required>
+                            min="16" max="130" required  <?php echo $habilitado; ?>>
                         </div>
                     
                         <div class="col-md-12">
                             <label for="reserveCantidadPersonas" class="form-label"><b>Cantidad de Personas: </b></label>
                             <input type="text" class="form-control" id="reserveCantidadPersonas" name= "reserveCantidadPersonas" 
-                            min="16" max="130" pattern="^[1-9]\d*$" required>
+                            min="16" max="130" pattern="^[1-9]\d*$" required  <?php echo $habilitado; ?>>
                         </div>
                 
                         <div class="col-md-12">
                             <label for="montoTotal" class="form-label"><b>Monto Total: </b></label>
                             <input type="text" class="form-control" id="montoTotal" name= "montoTotal" 
-                            min="16" max="130" disabled>
+                            min="16" max="130" disabled >
                         </div>          
             
                         <div class="col-md-4 " style = "margin-bottom: 20px;">
                             <button type="button" class="btn btn-secondary" id="btn_submit_form_evento"
-                            onclick = "alquilar()" name = "enviar" <?php echo $habilitado; ?>>ENVIAR</button>
+                            onclick = "alquilar()" name = "enviar"  <?php echo $habilitado; ?> >ENVIAR</button>
                         </div>
                     
                     </div> 
@@ -556,7 +583,7 @@
                 <?php if ($visible === "block" || $mostrarR === "block") { echo "block"; } else { echo "none"; } ?>">
                 <b>Reseñas</b>
             </p></h4>
-            <?php if($fila = $resultadoTraerResena->fetch_array(MYSQLI_ASSOC)){
+            <?php while($fila = $resultadoTraerResena->fetch_array(MYSQLI_ASSOC)){
                 extract($fila); 
                 if($respuesta != NULL && $respuesta !=""){
                     $mostrarRespuesta = "block";
@@ -566,7 +593,7 @@
                 <div class = "row g-2" style="border-block: 1px solid gray; border-radius:10px; margin-bottom: 20px;
                     display : <?php echo $mostrarR?>">
 
-                    <div class = "col-md-2" id = "mostrarResena">
+                    <div class = "col-md-4" id = "mostrarResena">
                         <?php if($calificacion > 0){
                             for($i = 0; $i < $calificacion; $i++){ ?>                            
                                 <img src="../static/imagenes/redes/star-fill.svg" alt="star">

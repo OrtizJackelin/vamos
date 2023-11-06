@@ -173,8 +173,9 @@
                                     }
 
                                    //echo"paso de largo";
+                                   $senteciaAlquiler ->close();
                                 }
-                                $senteciaAlquiler ->close();
+                                
                             }
                         }
                       

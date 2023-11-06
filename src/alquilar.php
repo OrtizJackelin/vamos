@@ -54,10 +54,10 @@
                 $sentencia->execute();
 
                 if($sentencia->affected_rows <= 0) {
-                    $mensaje = $mensaje ."error guardando <br>";     
+                    echo "error guardando <br>";     
                 }
                 $sentencia->close();   
-                $mensaje = $mensaje . "solicitud aprobada";
+                echo "solicitud aprobada";
             }     
         }
     }  else {

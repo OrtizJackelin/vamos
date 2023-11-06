@@ -38,7 +38,20 @@
         $resultadoServicio = $sentencia->get_result();
         $sentencia->close();
     }
-    //var_dump($_SESSION);
+
+    $consulta = "SELECT id, nombre
+    FROM etiqueta";        
+    $sentencia = $conexion->stmt_init();
+
+    if(!$sentencia->prepare($consulta)){
+        $mensaje = $mensaje. " fallo la preparacion de la consulta para buscar lista de servicios <br>";
+    }
+    else{
+        $sentencia->execute();
+        $resultadoEtiqueta = $sentencia->get_result();
+        $sentencia->close();
+    }
+
 
    // var_dump($_SESSION['esVerificado']);
    if(isset($_SESSION['esVerificado'])){
@@ -219,7 +232,30 @@
                                 }                 
                             }  
                         
-                        }                    
+                        } 
+                        if (isset($_POST['etiqueta'])){
+                            foreach($_POST['etiqueta'] as $id_etiqueta){
+                            
+                                $consulta = "INSERT INTO  etiqueta_publicacion(id_publicacion, id_etiqueta)
+                                VALUES (?, ?) ";
+
+                                $sentencia = $conexion->stmt_init();
+
+                                if(!$sentencia->prepare($consulta)) {
+                                    $mensaje = $mensaje. " fallo la preparacion de la consulta para guardar servicios seleccionados <br>";
+                                } else{
+                                    $sentencia->bind_param("ss",$id_publicacion, $id_etiqueta);
+
+                                    $sentencia->execute();
+                                    
+                                    if($sentencia->affected_rows <= 0) {
+                                        echo"error guardando imagen<br>"; 
+                                    }
+                                    $sentencia->close();   
+                                }                 
+                            }  
+                        
+                        }                     
                     }else{
                         $mensaje = $mensaje." error guardando datos de la publicación.<br>"; // ver aqi 
                     }
@@ -250,7 +286,7 @@
         integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     </head>
 
-    <body >
+    <body class="background2">
         <header>
             <?php include("barraDeNavegacion.php"); ?>
         </header>
@@ -260,15 +296,16 @@
             <section>            
                 <div class="container w-85" >
 
-                    <div class=" col-md-12 text-center" style=" margin-top: 20px;">
+                    <div class=" col-md-12 text-center" style=" margin-top: 40px;">
                         <h2> Publicar </h2>
-                    </div><br><br>
+                    </div><br>
 
                     <form class="row g-3 " id="formulario" method="post" action="publicar.php"  enctype="multipart/form-data">
 
                         <div class="col-md-12">
                             <label for="titulo" class="form-label">T&iacute;tulo</label>
-                            <input type="text" class="form-control" id="titulo" name = "titulo"  required>
+                            <input type="text" class="form-control" id="titulo" name = "titulo" 
+                            pattern="[A-Za-z0-9 ]{2,90}" required>
                         </div>
 
                         <div class="col-md-12">
@@ -278,36 +315,54 @@
 
                         <div class="col-md-12">
                             <label for="ubicacion" class="form-label">Ubicaci&oacute;n</label>
-                            <textarea class="form-control" id="ubicacion" name = "ubicacion"  rows="3" required></textarea>
+                            <textarea class="form-control" id="ubicacion" name = "ubicacion"  rows="3" 
+                            pattern="^[A-Za-z0-9 .#' /-_]{2,300}" required></textarea>
                         </div>
 
                         <div class="col-md-3">
                             <label for="tiempo_minimo" class="form-label">Minimo Estadia </label>
-                            <input type="number" class="form-control" id="tiempo_minimo" name = "tiempo_minimo" min="1" 
-                            maxlength="30" >
+                            <input type="text" class="form-control" id="tiempo_minimo" name = "tiempo_minimo" min="1" 
+                            maxlength="30" pattern="^[1-9]{1,}" required>
                         </div>
                         
                         <div class="col-md-3">
                             <label for="tiempo_maxino" class="form-label">M&aacute;ximo Estadia</label>
-                            <input type="number" class="form-control" id="tiempo_maximo" name = "tiempo_maximo" min="1" 
-                            maxlength="30" >
+                            <input type="text" class="form-control" id="tiempo_maximo" name = "tiempo_maximo" min="1" 
+                            maxlength="30" pattern="^[1-9]{1,}" required>
                         </div>
 
                         <div class="col-md-3">
                             <label for="cupo" class="form-label">Cupo</label>
-                            <input type="number" class="form-control" id="cupo" name = "cupo" min="1" maxlength="50"
-                            required>
+                            <input type="text" class="form-control" id="cupo" name = "cupo" min="1" maxlength="50"
+                            pattern="^[1-9]{1,}" required>
                         </div>
 
                         <div class="col-md-3">
                             <label for="costo" class="form-label">Costo</label>
-                            <input type="number" class="form-control" id="costo" name = "costo" min="100" maxlength="800000"
-                            required>
-                        </div>        
+                            <input type="text" class="form-control" id="costo" name = "costo" 
+                            pattern="^[0-9]{5,}"required>
+                        </div>     
+                        
+                        <label>Etiquetas</label>
+                        <?php                 
+                            while($fila = $resultadoEtiqueta->fetch_array(MYSQLI_ASSOC)){
+                               // var_dump($fila);
+                                echo "<div class=\"col-md-2\">
+                                    <div class=\"form-check\">
+                                        <input class=\"form-check-input\" type=\"checkbox\" name = \"etiqueta[]\" id=\"flexCheckDefault\" 
+                                        value = " . $fila['id'] . " >
+                                        <label class=\"form-check-label\" for=\"flexCheckDefault\">"
+                                            .$fila['nombre'].
+                                        "</label>
+                                    </div>                        
+                                </div>";
+                            }                      
+                        ?><br><br>
                     
-                        <p>Servicios</p>
+                        <label>Servicios</label>
                         <?php                 
                             while($fila = $resultadoServicio->fetch_array(MYSQLI_ASSOC)){
+                               // var_dump($fila);
                                 echo "<div class=\"col-md-2\">
                                     <div class=\"form-check\">
                                         <input class=\"form-check-input\" type=\"checkbox\" name = \"servicio[]\" id=\"flexCheckDefault\" 

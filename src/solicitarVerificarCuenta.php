@@ -206,7 +206,7 @@
         </script>
     </head>
 
-    <body>
+    <body class="background2">
 
         <header>
             <?php include("barraDeNavegacion.php"); ?>

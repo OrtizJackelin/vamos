@@ -47,7 +47,6 @@ function alert(message, type) {
 function validarInputs(event){
 
     var resultado=event.target.checkValidity();
-    let contrasena = "";
 
     if(event.target.id==='email'){
         resultado= validarEmail(event.target.value);
@@ -64,10 +63,9 @@ function validarInputs(event){
     }
     if(event.target.id==='clave'){
         resultado= validarClave(event.target.value);
-        contrasena = event.target.value;
     }
     if(event.target.id==='repetirClave'){
-        resultado= validarRepetirClave(event.target.value, contrasena );
+        resultado= validarRepetirClave(event.target.value, document.getElementById("clave").value);
     }
     if(event.target.id==='dni'){
         resultado= validarDni(event.target.value);
@@ -97,7 +95,7 @@ function validarClave(clave){
 
     var regex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[#$%^&+=!])(?!.*\s).{8,}$/;
     if(regex.test(clave)) {
-
+        return true;
     } else {
         alert('La clave no coincide con el patrón (Patrón: al menos A-Z,a-z,#$%&+=,0123456789. minimo 8 digitos)','warning');
         return false; 
@@ -124,6 +122,8 @@ function validarClave(clave){
     
 }
 function validarRepetirClave(repetirClave, clave){
+    console.log(repetirClave);
+    console.log(clave);
     if(repetirClave===clave){
         return true;
     }else{

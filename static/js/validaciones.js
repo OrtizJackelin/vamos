@@ -1,31 +1,57 @@
 var alertPlaceholder = "";
+var formularioValido=true;
 //Se Ejecuta Despues de Descargar el DOM (HTML)
 document.addEventListener("DOMContentLoaded", () => {
  
     const inputs = document.querySelectorAll("input");
     var inputDate = document.getElementById("fechaNacimiento");
     alertPlaceholder = document.getElementById('liveAlertPlaceholder');
+    var guardar = document.querySelector("#guardar");
+    var enviar = document.querySelector("#enviar");
 
     // Limpia el valor del campo de entrada
-   // inputDate.value = ""; // O puedes usar inputDate.value = null;
+    //inputDate.value = ""; // O puedes usar inputDate.value = null;
 
     inputs.forEach(
         function(myinput){
             myinput.addEventListener("blur",validarInputs);
         }
     );
+    if(enviar != null) {
+        enviar.addEventListener("click", function(event) {
+            event.preventDefault(); // Evita el envío predeterminado del formulario
+            validarFormulario(event);
+        });
+    }
+    if (guardar != null){
+        guardar.addEventListener("click", function(event) {
+                event.preventDefault();
+                validarFormu(event);
+            });
+    }
     
-    document.querySelector("#enviar").addEventListener("click", function(event) {
-        event.preventDefault(); // Evita el envío predeterminado del formulario
-        validarFormulario(event);
-    });
 
 });
 
 function validarFormulario(event){
+
     var formulario= document.querySelector("#formulario");
-    if (formulario.checkValidity()){
+    if (formulario.checkValidity() && formularioValido){
         formulario.submit();
+    }
+    else{
+        formulario.reportValidity();
+    }
+
+}
+
+function validarFormu(event){
+    var formulario= document.querySelector("#formulario");
+    if (formularioValido && formulario.checkValidity()){
+        const myModal2 = new bootstrap.Modal('#staticBackdrop', {
+            keyboard: false
+        })
+        myModal2.show();
     }
     else{
         formulario.reportValidity();
@@ -74,10 +100,10 @@ function validarInputs(event){
         resultado= validarTelefono(event.target.value);
     }
     if(resultado){
-      
+        formularioValido=true;
         event.target.style.borderColor="#ced4da";
     }else{
-      
+        formularioValido=false;
         event.target.style.borderColor="crimson";
     }
 

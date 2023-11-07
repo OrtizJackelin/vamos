@@ -13,7 +13,7 @@
     }
     extract($_POST);
     //var_dump($_POST);
-
+    /////////////////////Consulta Para buscar texto libre haciendo un pareo entre etiquetas, intereses, titutlo, etc..////////
 
     $consulta = "SELECT p.id,p.fecha_inicio_publicacion,p.fecha_fin_publicacion, p.costo, p.ubicacion,
                     IF (u.es_verificado=1,'destacada','') estilo, 
@@ -35,6 +35,7 @@
     if (!$sentencia->prepare($consulta)) {
         echo "Fallo la preparación de la consulta <br>";
     } else {
+        //////////
         $buscar = "%" . $buscar . "%";
         $sentencia->bind_param("ssss",$buscar, $buscar, $buscar, $buscar);
         $sentencia->execute();

@@ -4,7 +4,7 @@
     if(!isset($_SESSION['id'])){
         header("Location: index.php");
         exit;
-        var_dump($_SESSION);
+        //var_dump($_SESSION);
     }
     
     $valido = true;
@@ -34,9 +34,9 @@
         $esVerificado = 0;
 
         $fotoEmpty = false;
+        //var_dump($_POST);
         extract($_POST);
-        
-    
+
         if (file_exists($directorioDestino) && ($_FILES['foto']['size']>0) ) {
                     
             $nombreFoto = $_FILES["foto"]["name"];
@@ -99,6 +99,34 @@
         }            
         
         if($valido){
+
+            $consulta = "UPDATE verificacion_cuenta 
+            SET estado = 2
+            WHERE id = ( SELECT id
+            FROM  verificacion_cuenta 
+            WHERE id_usuario = ?
+            ORDER BY fecha_revision DESC LIMIT 1)";
+
+            $sentencia = $conexion->stmt_init();
+
+            if(!$sentencia->prepare($consulta)) {
+                $mensaje = $mensaje . "fallo la preparacion de la consulta general de los dato" . $conexion->error . " <br>";
+                $valido = false;
+            } else{
+                $sentencia->bind_param("s", $_SESSION['id']);        
+                
+                if (!$sentencia->execute()) {
+                    $mensaje = $mensaje . "Error ejecutando la consulta de los datos: " . $sentencia->error . "<br>";
+                    $valido = false;
+                } else {
+                    if($sentencia->affected_rows <= 0) {
+                        $mensaje = $mensaje . "no se realizo ninguna actualización el los datos del usuario <br>"; 
+                        $valido = false;
+                    }                    
+                }
+                $sentencia->close(); 
+            }
+
             $consulta = "UPDATE  user 
                         SET nombre = ?, apellido = ?, dni = ?, sexo = ?, fecha_nacimiento = ?, 
                             telefono = ?, cod_pais= ?, bio = ?, es_verificado = ?
@@ -110,7 +138,7 @@
                 $mensaje = $mensaje . "fallo la preparacion de la consulta general de los dato" . $conexion->error . " <br>";
                 $valido = false;
             } else{
-                $sentencia->bind_param("ssssssssss", $nombre, $apellido, $dni, $sexo, $fechaNacimiento,
+                $sentencia->bind_param("ssssssssss", $nombre, $apellido, $dni, $sexo, $fechaN,
                                         $telefono, $codPais, $bio, $esVerificado,  $_SESSION['id']);        
                 
                 if (!$sentencia->execute()) {
@@ -176,7 +204,7 @@
         ///////////////////////Insertamos las nuevas opciones seleccionadas//////////////
         if(isset($interes)){
             foreach($interes as $id_interes){
-                echo $_SESSION['id']. "y " .$id_interes;
+                //echo $_SESSION['id']. "y " .$id_interes;
                                             
                 $consulta = "INSERT  INTO interes_user
                             (id_usuario, id_interes)
@@ -239,7 +267,6 @@
         
         if($dato = $resultado->fetch_array(MYSQLI_ASSOC)) {
             extract($dato);        
-           //var_dump($dato);
         } else {
             $mensaje = $mensaje. " Datos no encontrados. <br>";
             $valido = false;
@@ -502,16 +529,9 @@
 
                         <!-- <div class = "row" style="margin-bottom: 30px">-->
 
-                        <!--  <div class="col-4 ">
-                        <button type="submit" class="btn btn-secondary" id="btn_submit_form_evento" name = "guardar">Guardar</button>
-                        </div>-->
-
-
-                        <!-- Button trigger modal -->
-                        <button type="button" class="btn btn-secondary" data-bs-toggle="modal"
-                            data-bs-target="#staticBackdrop" name="guardar">
-                            Guardar
-                        </button>
+                    <div class="col-4 ">
+                        <button type="button" class="btn btn-secondary" 
+                        id="guardar" name = "guardar">Guardar</button>
                     </div>
 
                     <!-- Modal -->
@@ -533,7 +553,7 @@
                                 <div class="modal-footer">
                                     <button type="button" class="btn btn-secondary"
                                         data-bs-dismiss="modal">Cerrar</button>
-                                    <button type="submit" class="btn btn-primary" id = "enviar" name="enviar">Enviar</button>
+                                    <button type="submit" class="btn btn-primary" id = "env" name="env">Enviar</button>
                                 </div>
                             </div>
                         </div>
@@ -550,8 +570,7 @@
                 <div>
                     <H6><b><?php echo $mensaje ?></H6></b>
                 </div>
-                <button type="button" class="btn-close position-absolute top-0 end-0 m-2" rol="alert"
-                    aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
             <?php } ?>
         </div>

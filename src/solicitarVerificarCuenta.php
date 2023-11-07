@@ -212,7 +212,7 @@
             <?php include("barraDeNavegacion.php"); ?>
         </header>
 
-        <div class="todoElAlto" id="tabs">
+        <div class="todoElAlto contenedor" id="tabs">
             
             <?php if(!$solicitudEnProceso) { ?>
                 <div class="container">

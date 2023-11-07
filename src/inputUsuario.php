@@ -86,6 +86,26 @@
 
     }
 
+    if (isset($_POST['fechaN']) && !empty($_POST['fechaN'])){
+
+        $fechaActual = new DateTime();
+        $fechaNacimiento = $_POST['fechaN'];                    
+        $fechaNacimiento = new DateTime($fechaNacimiento);
+        $edadMinima = 18; // Edad mínima requerida
+        $diferencia = $fechaNacimiento->diff($fechaActual);
+
+        if ($fechaNacimiento > $fechaActual) {
+            $mensaje = $mensaje." La fecha ingresada no puede ser superior a la fecha actual. <br>";
+            $valido = false;
+        } elseif ($diferencia->y < $edadMinima) {
+            $mensaje = $mensaje." Debes tener al menos 18 años para registrarte.<br>";
+            $valido = false;
+        } else  {               
+            $fechaFormateada = $fechaNacimiento->format('Y-m-d');
+        }                     
+
+    }
+
     if (!isset($_POST['codPais'])){
 
         $valido = false;

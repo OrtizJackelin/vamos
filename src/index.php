@@ -35,7 +35,8 @@
         
     }
     if(isset($_SESSION['id'])){
-
+        
+        ////////////////////////////////////Buscar Recomendados////////////////////////////////////////////////
         $consulta = "SELECT p.id, p.fecha_inicio_publicacion, p.fecha_fin_publicacion, p.costo, p.ubicacion, p.titulo,
                     IF (u.es_verificado=1,'destacada','normal') estilo, 
                     (SELECT ruta from imagen i WHERE i.id_publicacion = p.id ORDER BY id LIMIT 1 ) ruta
@@ -235,7 +236,7 @@
 
             <div  id="tabs-2">
 
-                <div class = "container;" style = "display : <?php echo $visibleRecomendados?>">
+                <div class = "container " style = "display : <?php echo $visibleRecomendados?>">
                     <div class="alert alert-primary d-flex align-items-center alert-dismissible" role="alert" 
                         style = "margin-top: 20px; margin-bottom: 5px;" type = "hidedeng">
                         <?php include "../static/imagenes/redes/exclamation-triangle.svg" ?>                

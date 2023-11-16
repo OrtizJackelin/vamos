@@ -299,13 +299,25 @@
                                             <div style="display:flex; flex-direction:column; padding:3px; " >
                                                 <span style="color:#5F5F5F; font-size:9px;">desde</span>
                                                 <span style="color:#5F5F5F; font-size:14px;">
-                                                    <?php echo $publicacionR['fecha_inicio_publicacion']?>
+                                                    <?php if(isset($publicacionR['fecha_inicio_publicacion']) 
+                                                            && $publicacionR['fecha_inicio_publicacion'] != null
+                                                            && $publicacionR['fecha_inicio_publicacion'] != ""){
+                                                        echo $publicacionR['fecha_inicio_publicacion'];
+                                                        } else {
+                                                            echo "";
+                                                        }?>
                                                 </span>
                                             </div>
                                             <div style="display:flex; flex-direction:column;  padding:3px; " >
                                                 <span style="color:#5F5F5F; font-size:9px;">hasta</span>
                                                 <span style="color:#5F5F5F; font-size:14px;">
-                                                    <?php echo $publicacionR['fecha_fin_publicacion']?>
+                                                <?php if(isset($publicacionR['fecha_fin_publicacion']) 
+                                                            && $publicacionR['fecha_fin_publicacion'] != null
+                                                            && $publicacionR['fecha_fin_publicacion'] != ""){
+                                                        echo $publicacionR['fecha_fin_publicacion'];
+                                                        } else {
+                                                            echo "";
+                                                        }?>
                                                 </span>
                                             </div>
                                         </div>

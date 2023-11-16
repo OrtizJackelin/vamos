@@ -35,9 +35,9 @@
                 if($resultadoFecha->num_rows > 0){                             
                     $esValido = false;
                     var_dump($esValido);
-                    echo "ya tiene una solicitud en curso";
+                    echo "Ya tiene una solicitud en curso.<br>";
                 }
-                echo "debe esperar que su solicitud sea revisada";
+                echo "Debe esperar que su solicitud sea revisada.<br>";
             }
 
         } 
@@ -48,20 +48,20 @@
             VALUES (?,?,?,?,?,?)";
             $sentencia = $conexion->stmt_init();
             if(!$sentencia->prepare($consulta)){
-                echo "error preparando la consulta para insertar datos ";
+                //echo "error preparando la consulta para insertar datos ";
             } else{
                 $sentencia ->bind_param("ssssss", $idPublicacion, $idUsuario, $fechaInicio, $fechaFin, $costo, $_SESSION['esVerificado']);
                 $sentencia->execute();
 
                 if($sentencia->affected_rows <= 0) {
-                    echo "error guardando <br>";     
+                    echo "No se realizo la reserva <br>";     
                 }
                 $sentencia->close();   
-                echo "solicitud aprobada";
+                echo "Reserva aprobada.<br>";
             }     
         }
     }  else {
-        echo "Parametros de entradas invalidos no se realizo la reserva";
+        echo "Parametros de entradas invalidos no se realizo la reserva.<br>";
     }
     
     include "bd/cerrar_conexion.php";      

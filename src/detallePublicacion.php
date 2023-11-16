@@ -20,8 +20,10 @@
     $visible = "none";
     $mostrarR = "none";
     $mostrarRespuesta = "none";
-    
-
+    $valido = true;
+    $mensajeJs = "";
+    $mensajeJsServicios = "";
+    $mensajeAlquiler = "";
     $consulta = "SELECT p.*, u.nombre
                 FROM publicacion p, user u
                 WHERE p.id = ?
@@ -30,7 +32,7 @@
     $sentencia = $conexion->stmt_init();
 
     if (!$sentencia->prepare($consulta)) {     
-        echo "Fallo la preparación de la consulta <br>";
+       // echo "Fallo la preparación de la consulta <br>";
     } else {
         $sentencia->bind_param("s", $_GET['id']);
         $sentencia->execute();
@@ -50,6 +52,7 @@
                     if($_SESSION['id'] === $id_usuario){
                         $usuarioHabilitado = 0;
                         $habilitado = "disabled";
+                        $mensajeJs= "Campos deshabilitados, ¡la publicación está registrada por usted!";
                     }
                 } else {
                     $habilitado = "disabled";
@@ -69,7 +72,7 @@
                 
                     
                 } else {
-                    echo "Fallo la preparación de la consulta de imagen <br>";
+                   // echo "Fallo la preparación de la consulta de imagen <br>";
                 }
             }
         
@@ -80,7 +83,7 @@
             $sentencia = $conexion->stmt_init();
         
             if(!$sentencia->prepare($consulta)){
-                echo "fallo la preparacion de la consulta <br>";
+               // echo "fallo la preparacion de la consulta <br>";
             } else{                
                 $sentencia->bind_param("s", $id);
                 $sentencia->execute();
@@ -100,13 +103,16 @@
             $sentencia = $conexion->stmt_init();
 
             if(!$sentencia->prepare($consulta)){
-                echo "fallo la preparacion de la consulta <br>";
+                //echo "fallo la preparacion de la consulta <br>";
             }
             else{
                 
                 $sentencia->bind_param("s", $_GET['id']);
                 $sentencia->execute();
                 $resultadoServicios = $sentencia->get_result();
+                if($resultadoServicios -> num_rows == 0){
+                    $mensajeJsServicios = "No se especificaron servicios";
+                }
                 $sentencia->close();
             }
             
@@ -151,12 +157,12 @@
                     }
                 }
             } else {
-                $consulta = "SELECT aprobado
-                            FROM alquiler
-                            WHERE id_usuario = ?
-                            AND (aprobado = 2
-                            OR fecha_fin < CURRENT_TIMESTAMP)
-                            ORDER BY fecha_fin DESC LIMIT 1";
+                $consulta = "SELECT aprobado 
+                            FROM alquiler 
+                            WHERE id_usuario = ? 
+                            AND fecha_fin >= CURRENT_TIMESTAMP
+                            and aprobado!=2
+                            ORDER BY fecha_solicitud DESC limit 1";
 
                 $sentencia = $conexion->stmt_init();
                 if(!$sentencia->prepare($consulta)){
@@ -167,11 +173,12 @@
                     $sentencia->execute();
                     $resultadoHabilitarAlquiler= $sentencia->get_result();
                     $sentencia->close();
-                    if($resultadoHabilitarAlquiler->num_rows != 0){
-                       // echo "no consiguio reseña";
+                    if($resultadoHabilitarAlquiler->num_rows > 0){
+                     
                         $habilitado = "disabled";
+                        $mensajeAlquiler = "Usted tiene un alquiler en proceso ó una solicitud de alquiler. Para más beneficios debe verificar la cuenta";
                         
-                    }
+                    } 
                    // var_dump($resultadoHabilitarAlquiler);
                 }
 
@@ -215,217 +222,268 @@
     <link rel="stylesheet" href="../static/css/flatpickr.min.css">
 
     <script>   
+        var alertPlaceholder = "";
+        var alertPlaceholderservicios = "";
+        var alertPlaceholderPropietario = "";
+        document.addEventListener("DOMContentLoaded", () => {
+            
+            alertPlaceholder = document.getElementById('liveAlertPlaceholder');
+            alertPlaceholderPropietario = document.getElementById('liveAlertPlaceholderPropietario');
+            alertPlaceholderservicios = document.getElementById('liveAlerServiciosPlaceholderServicios');
+            var mensajeJs = "<?php echo $mensajeJs ?>";
+            var mensajeAlquiler = "<?php echo $mensajeAlquiler?>";
 
-    document.addEventListener("DOMContentLoaded", () => {
+            if( mensajeJs != ""){
+                alertPropietario(mensajeJs, 'info');
+            }
 
-        var arregloEnJavaScript = <?php if(isset( $datosJson)){
-                                            echo $datosJson;
-                                        } else { 
-                                            echo "[]";
-                                        }
-                                    ?>;
-                                    
-        var fechaMinimoPublicacion = <?php if(!isset($fechaInicio) || $fechaInicio === null){
-                                                echo "\"today\"";
-                                            } else {
-                                                $fechaActual = new DateTime();
-                                                $fechaObjeto = new DateTime($fechaInicio);
-                                                if($fechaObjeto > $fechaActual){
-                                                    echo "'" . $fechaInicio . "'";
-                                                } else {
+            if(mensajeAlquiler != ""){
+                alertPropietario(mensajeAlquiler, 'info');
+            }
+
+            var mensajeJsServicios = "<?php echo $mensajeJsServicios?>"
+
+            if(mensajeJsServicios != ""){
+                alertServicios(mensajeJsServicios, 'dark');
+            }
+
+            var arregloEnJavaScript = <?php if(isset( $datosJson)){
+                                                echo $datosJson;
+                                            } else { 
+                                                echo "[]";
+                                            }
+                                        ?>;
+                                        
+            var fechaMinimoPublicacion = <?php if(!isset($fechaInicio) || $fechaInicio === null){
                                                     echo "\"today\"";
-                                                }
-                                            }?>;
+                                                } else {
+                                                    $fechaActual = new DateTime();
+                                                    $fechaObjeto = new DateTime($fechaInicio);
+                                                    if($fechaObjeto > $fechaActual){
+                                                        echo "'" . $fechaInicio . "'";
+                                                    } else {
+                                                        echo "\"today\"";
+                                                    }
+                                                }?>;
 
-        var fechaMaximoPublicacion = <?php if(!isset($fechaFin) || $fechaFin === null){
-                                                echo "\"\"";
-                                            } else {
-                                                echo "'" . $fechaFin . "'";
-                                            }?>;
+            var fechaMaximoPublicacion = <?php if(!isset($fechaFin) || $fechaFin === null){
+                                                    echo "\"\"";
+                                                } else {
+                                                    echo "'" . $fechaFin . "'";
+                                                }?>;
 
-        console.log(fechaMinimoPublicacion);
-        console.log(fechaMaximoPublicacion);
-        // Función para cambiar las claves en un objeto
-        function cambiarClavesEnObjeto(objeto) {
-            var objetoModificado = {};
-            for (var clave in objeto) {
-                if (objeto.hasOwnProperty(clave)) {
-                    switch (clave) {
-                        case "fecha_inicio":
-                            objetoModificado["from"] = objeto[clave];
-                            break;
-                        case "fecha_fin":
-                            objetoModificado["to"] = objeto[clave];
-                            break;
-                        default:
-                            objetoModificado[clave] = objeto[clave];
+            console.log(fechaMinimoPublicacion);
+            console.log(fechaMaximoPublicacion);
+            // Función para cambiar las claves en un objeto
+            function cambiarClavesEnObjeto(objeto) {
+                var objetoModificado = {};
+                for (var clave in objeto) {
+                    if (objeto.hasOwnProperty(clave)) {
+                        switch (clave) {
+                            case "fecha_inicio":
+                                objetoModificado["from"] = objeto[clave];
+                                break;
+                            case "fecha_fin":
+                                objetoModificado["to"] = objeto[clave];
+                                break;
+                            default:
+                                objetoModificado[clave] = objeto[clave];
+                        }
                     }
                 }
+                return objetoModificado;
             }
-            return objetoModificado;
+
+            // Cambiar las claves en cada objeto del arreglo
+            var fechas_deshabilitadas = arregloEnJavaScript.map(cambiarClavesEnObjeto);
+            
+            flatpickr("#rangoFechas", {
+                minDate: fechaMinimoPublicacion,
+                maxDate: fechaMaximoPublicacion,
+                mode: "range",
+                disable: fechas_deshabilitadas,
+                dateFormat: "Y/m/d",
+                onValueUpdate: function(selectedDates, dateStr, instance) {
+
+                    var partes = dateStr.split(" to ");
+
+                    if (selectedDates.length > 1) {
+                        document.getElementById("fechaInicio").value = partes[0];
+                        document.getElementById("fechaFin").value = partes[1];
+                        
+                        // Obtener los valores de las fechas desde los campos de entrada
+                        var fechainicioStr = partes[0];
+                        var fechaFinStr = partes[1];
+                        
+                        // Convertir las fechas de texto a objetos Date
+                        var fecha1 = new Date(fechainicioStr);
+                        var fecha2 = new Date(fechaFinStr);
+                        
+                        // Realizar la resta de fechas (en milisegundos)
+                        var diferenciaEnMilisegundos = fecha2 - fecha1;
+                        
+                        // Calcular la diferencia en días
+                        var diferenciaEnDias = diferenciaEnMilisegundos / (1000 * 60 * 60 * 24);
+                        console.log(diferenciaEnDias);
+
+                        var montoTotal = diferenciaEnDias * <?php echo$costo?>;
+                        
+                        // Mostrar la diferencia
+                        // Formatear el número con dos decimales y separadores de miles
+                        const numeroFormateado = montoTotal.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 });
+                        $("#montoTotal").val(numeroFormateado);
+
+                    }
+                }
+            
+            });
+        
+            $("#reserveCantidadPersonas").on("blur", function() {
+            // Obtiene el valor del campo
+                var valor = $(this).val();
+                resultado = true;
+                
+                // Realiza la verificación que desees
+                if (valor === "") {
+                    alert('El campo está vacío. Por favor, ingresa un valor.','warning');
+                    resultado = false;
+                } 
+                if(!validarCantidadPersonas(valor)){
+                    alert('El campo debe contener solo numeros.', 'warning');
+                    resultado = false;
+                }
+                if(valor > <?php echo $cupo ?>){
+                    alert('Excede la cantidad de personas permitidas.','warning');
+                    resultado = false;
+                }
+                if(resultado){      
+                    $("#reserveCantidadPersonas").css("border-color", "#ced4da");
+                }else{    
+                    $("#reserveCantidadPersonas").css("border-color", "crimson");
+                }
+            });
+
+
+        });
+
+        function validarCantidadPersonas(numero) {
+            const regex = /^[1-9]\d*$/;
+            return regex.test(numero);
         }
 
-        // Cambiar las claves en cada objeto del arreglo
-        var fechas_deshabilitadas = arregloEnJavaScript.map(cambiarClavesEnObjeto);
-        
-        flatpickr("#rangoFechas", {
-            minDate: fechaMinimoPublicacion,
-            maxDate: fechaMaximoPublicacion,
-            mode: "range",
-            disable: fechas_deshabilitadas,
-            dateFormat: "Y/m/d",
-            onValueUpdate: function(selectedDates, dateStr, instance) {
+        function alert(message, type) {
+            var wrapper = document.createElement('div');
+            wrapper.innerHTML = '<div class="alert alert-' + type + ' alert-dismissible" role="alert">' +
+            '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-exclamation-triangle-fill flex-shrink-0 me-2" viewBox="0 0 16 16" role="img" aria-label="Warning:">' +
+            '<path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.980 1.767h13.713c.889 0 1.438-.99.980-1.767L8.982 1.566zM8 5c.535 0 .954.462.900.995l-.350 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>' +
+            '</svg>' +
+            message + '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>';
 
-                var partes = dateStr.split(" to ");
+            alertPlaceholder.append(wrapper);
+        }
 
-                if (selectedDates.length > 1) {
-                    document.getElementById("fechaInicio").value = partes[0];
-                    document.getElementById("fechaFin").value = partes[1];
-                    
-                    // Obtener los valores de las fechas desde los campos de entrada
-                    var fechainicioStr = partes[0];
-                    var fechaFinStr = partes[1];
-                    
-                    // Convertir las fechas de texto a objetos Date
-                    var fecha1 = new Date(fechainicioStr);
-                    var fecha2 = new Date(fechaFinStr);
-                    
-                    // Realizar la resta de fechas (en milisegundos)
-                    var diferenciaEnMilisegundos = fecha2 - fecha1;
-                    
-                    // Calcular la diferencia en días
-                    var diferenciaEnDias = diferenciaEnMilisegundos / (1000 * 60 * 60 * 24);
-                    console.log(diferenciaEnDias);
+        function alertServicios(message, type) {
+            var wrapper = document.createElement('div');
+            wrapper.innerHTML = '<div class="alert alert-' + type + ' alert-dismissible" role="alert" >' + message ;
 
-                    var montoTotal = diferenciaEnDias * <?php echo$costo?>;
-                    
-                    // Mostrar la diferencia
-                    // Formatear el número con dos decimales y separadores de miles
-                    const numeroFormateado = montoTotal.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 });
-                    $("#montoTotal").val(numeroFormateado);
+            alertPlaceholderservicios.append(wrapper);
+        }
 
-                }
-            }
-           
-        });
-      
-        $("#reserveCantidadPersonas").on("blur", function() {
-        // Obtiene el valor del campo
-            var valor = $(this).val();
-            resultado = true;
+        function alertPropietario(message, type) {
+            var wrapper = document.createElement('div');
+            wrapper.innerHTML = '<div class="alert alert-' + type + ' alert-dismissible" role="alert">' +
+            '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-exclamation-triangle-fill flex-shrink-0 me-2" viewBox="0 0 16 16" role="img" aria-label="Warning:">' +
+            '<path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.980 1.767h13.713c.889 0 1.438-.99.980-1.767L8.982 1.566zM8 5c.535 0 .954.462.900.995l-.350 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>' +
+            '</svg>' + message;
+            alertPlaceholderPropietario.append(wrapper);
+        }
+
+        function resenar(){
             
-            // Realiza la verificación que desees
-            if (valor === "") {
-                alert("El campo está vacío. Por favor, ingresa un valor.");
-                resultado = false;
-            } 
-            if(!validarCantidadPersonas(valor)){
-                alert("El campo debe contener solo numeros.");
-                resultado = false;
-            }
-            if(valor > <?php echo $cupo ?>){
-                alert("Excede la cantidad de personas permitidas.");
-                resultado = false;
-            }
-            if(resultado){      
-                $("#reserveCantidadPersonas").css("border-color", "#ced4da");
-            }else{    
-                $("#reserveCantidadPersonas").css("border-color", "crimson");
-            }
-        });
-
-
-    });
-
-    function validarCantidadPersonas(numero) {
-        const regex = /^[1-9]\d*$/;
-        return regex.test(numero);
-    }
-
-    function resenar(){
-        var valorSeleccionado = 0;
-        var comentario = $("#comentar").value;
-        if(comentario == ""){
-            alert("el mensaje está vacío");
-        } else {
-        
-            // Encuentra el radio button seleccionado dentro del grupo                   
-            var valorSeleccionado = $('input[name=rating]:checked').val();
-            // Verifica si hay un radio button seleccionado
-            if (valorSeleccionado.length > 0) {      
-                console.log('El radio button seleccionado tiene el valor: ' + valorSeleccionado);
+            var valorSeleccionado = 0;
+            var comentario = $("#comentar").value;
+            if(comentario == ""){
+                alert("el mensaje está vacío");
             } else {
-                console.log('Ningún radio button seleccionado');
-            }
-            console.log(valorSeleccionado);
-            var parametros = {
-                "comentario" : document.getElementById("comentar").value,
-                "calificacion" : valorSeleccionado, 
-                "idUsuario" : <?php echo $_SESSION['id'] ?>,
-                "idPublicacion" : <?php echo $_GET['id'] ?>
-            };
-            $.ajax({
-                data : parametros,
-                url : 'guardarResena.php',
-                type : 'post',
-                beforeSend : function(){
-                    $("#resultadoResena").html("procesando");
-                },
-                success : function(response){
-                    
-                    const subcadena = "Error";
-                    const posicion = response.indexOf(subcadena);
-                    $("#resultadoResena").html(response);
-                    if (posicion == -1) {
-                      $('#divResena').hide();
-                    }
-                }
-            });
-
-        }
-    }
-
-    function alquilar(){
-
-            var idUsuario = document.getElementById("hidUsuario").value;
-            var fechaInicio = document.getElementById("fechaInicio");
-            var fechaFin = document.getElementById("fechaFin");
-            var idUsuarioPublicacion = <?php echo $id_usuario?>;
-            var usuarioHabilitado = <?php if(isset($usuarioHabilitado))
-                                            echo $usuarioHabilitado;
-                                       ?>;
-              console.log(usuarioHabilitado);      
-        if(idUsuario === null  || idUsuario === undefined){
             
-            window.location.href = "iniciarSesion.php";    
-
-        } 
-
-        if(usuarioHabilitado){
-            var parametros = {
-                "idPublicacion" : document.getElementById("hidPublicacion").value,
-                "idUsuario" : idUsuario,
-                "costo" : document.getElementById("hcosto").value,
-                "fechaInicio" : fechaInicio.value,
-                "fechaFin" : fechaFin.value,
-                "idUsuarioPublicacion" : idUsuarioPublicacion
-            };
-            $.ajax({
-                data : parametros,
-                url : 'alquilar.php',
-                type : 'post',
-                beforeSend : function(){
-                    $("#resultado").html("procesando");
-                },
-                success : function(response){
-                    $("#resultado").html(response);
+                // Encuentra el radio button seleccionado dentro del grupo                   
+                var valorSeleccionado = $('input[name=rating]:checked').val();
+                // Verifica si hay un radio button seleccionado
+                if (valorSeleccionado.length > 0) {      
+                    console.log('El radio button seleccionado tiene el valor: ' + valorSeleccionado);
+                } else {
+                    console.log('Ningún radio button seleccionado');
                 }
-            });
+                console.log(valorSeleccionado);
+                var parametros = {
+                    "comentario" : document.getElementById("comentar").value,
+                    "calificacion" : valorSeleccionado, 
+                    "idUsuario" : <?php echo $_SESSION['id'] ?>,
+                    "idPublicacion" : <?php echo $_GET['id'] ?>
+                };
+                $.ajax({
+                    data : parametros,
+                    url : 'guardarResena.php',
+                    type : 'post',
+                    beforeSend : function(){
+                        $("#resultadoResena").html("procesando");
+                    },
+                    success : function(response){
+                        
+                        const subcadena = "Error";
+                        const posicion = response.indexOf(subcadena);
+                        $("#resultadoResena").html(response);
+                        if (posicion == -1) {
+                        $('#divResena').hide();
+                        }
+                    }
+                });
 
-        } else {
-            console.log("no puede alquilar su propia propiedad");
+            }
         }
-    }  
+
+        function alquilar(){
+
+                var idUsuario = document.getElementById("hidUsuario").value;
+                var fechaInicio = document.getElementById("fechaInicio");
+                var fechaFin = document.getElementById("fechaFin");
+                var idUsuarioPublicacion = <?php echo $id_usuario?>;
+                var usuarioHabilitado = <?php if(isset($usuarioHabilitado))
+                                                echo $usuarioHabilitado;
+                                        ?>;
+                console.log(usuarioHabilitado);      
+            if(idUsuario === null  || idUsuario === undefined){
+                
+                window.location.href = "iniciarSesion.php";    
+
+            } 
+
+            if(usuarioHabilitado){
+                var parametros = {
+                    "idPublicacion" : document.getElementById("hidPublicacion").value,
+                    "idUsuario" : idUsuario,
+                    "costo" : document.getElementById("hcosto").value,
+                    "fechaInicio" : fechaInicio.value,
+                    "fechaFin" : fechaFin.value,
+                    "idUsuarioPublicacion" : idUsuarioPublicacion
+                };
+                $.ajax({
+                    data : parametros,
+                    url : 'alquilar.php',
+                    type : 'post',
+                    beforeSend : function(){
+                        $("#resultado").html("procesando");
+                    },
+                    success : function(response){
+                        $("#resultado").html(response);
+                        alert(response, 'info');
+                    }
+                });
+
+            } else {
+                alert('No puede alquilar su propia propiedad', 'info');
+            }
+        }  
     </script>
 </head>
 
@@ -499,10 +557,28 @@
                         </div> 
 
                         <div class="col-md-6">
+                            
                             <label for = "disponible"><b>Disponible: </b></label>
                             <input type = "text" id = "disponible"class="form-control" 
-                                value = "<?php echo "del  ".date("d/m/Y", strtotime($fecha_inicio_publicacion)).
-                                "  al  ". date("d/m/Y", strtotime($fecha_fin_publicacion));?>" disabled>                        
+                                value = "<?php ///////////REVISAR AQUI LA VALIDACION//////
+                                if($fecha_inicio_publicacion == null && $fecha_fin_publicacion == null){
+                                    echo "Disponible todo el año ";
+                                } else {
+                                    $salida = "";
+                                    if(isset($fecha_inicio_publicacion) 
+                                    && $fecha_inicio_publicacion != null
+                                    && $fecha_inicio_publicacion != ""){
+                                        $salida = date("d/m/Y", strtotime($fecha_inicio_publicacion));
+                                        echo "desde:  " . $salida;
+                                    }
+                                    if(isset($fecha_fin_publicacion) 
+                                    && $fecha_fin_publicacion != null
+                                    && $fecha_fin_publicacion != ""){
+                                        $salida = "     hasta: " . date("d/m/Y", strtotime($fecha_fin_publicacion));
+                                        echo $salida;
+                                    }
+
+                                } ?>" disabled>                    
                         </div> 
 
                         <div class="col-md-4">
@@ -515,7 +591,7 @@
                             <label id = "serviciosDisponobles"><b>Servicios Disponibles:</b></label>
                             <?php                  
                                 while($fila = $resultadoServicios->fetch_array(MYSQLI_ASSOC)){
-                                echo "<div class=\"col-md-2\">
+                                echo "<div class=\"col-md-6\">
                                         <div class=\"form-check\">
                                             <input class=\"form-check-input\" type=\"checkbox\" name = \"interes[]\" id=\"flexCheckChecked\" 
                                             value = " . $fila['nombre'] . " checked disabled>
@@ -525,7 +601,9 @@
                                         </div>                        
                                     </div>";
                                 }
-                            ?>                      
+                                
+                            ?>    
+                            <div id="liveAlerServiciosPlaceholderServicios"></div>                  
                         </div> 
 
                         <div class="col-md-4">
@@ -565,6 +643,8 @@
                         </div>
                     
                     </div> 
+                    <div id="liveAlertPlaceholder"></div>
+                    <div id="liveAlertPlaceholderPropietario" style = "height: 5px ;"></div>
                 </div>
             </div>             
         

@@ -64,11 +64,11 @@
                         $mensaje = $mensaje. "Última Solicitud rechazada, fecha: " . $dato['fecha_revision'] . "<br>";
                         $solicitudEnProceso = false;
                         $valido = false;
-                        echo "aqui";
+                        //echo "aqui";
                         break;
                     default:
                         $mensaje = $mensaje. "La opción no coincide con ninguna de las anteriores.<br>";
-                        echo"default";
+                        //echo"default";
                 }
 
             }

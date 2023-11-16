@@ -145,7 +145,7 @@
                 $sentencia = $conexion->stmt_init();
 
                 if(!$sentencia->prepare($consulta)) {
-                    $mensaje = $mensaje. "fallo la preparacion de la consulta para guardar datos de publicación <br>";
+                   // $mensaje = $mensaje. "fallo la preparacion de la consulta para guardar datos de publicación <br>";
                 } else{
                     $sentencia->bind_param("ssssssssss", $_POST['titulo'], $_POST['descripcion'], $_POST['ubicacion'], 
                     $_POST['costo'], $_POST['cupo'], $_POST['tiempo_minimo'], $_POST['tiempo_maximo'], 
@@ -156,13 +156,13 @@
                     if($sentencia->affected_rows > 0){
                         unset($_SESSION['email']);
                         $id_publicacion = $sentencia->insert_id;
-                        $sentencia->close();     
+                        $sentencia->close();
                                     
                         $rutaDestino = $directorioDestino . $id_publicacion . "/";
 
                         if (!file_exists($rutaDestino )) {
                             if (!mkdir($rutaDestino )) {
-                                $mensaje = $mensaje. "Error al crear la carpeta '$rutaDestino '.";
+                                //$mensaje = $mensaje. "Error al crear la carpeta '$rutaDestino '.";
                             } 
                         }    
                         //var_dump($_FILES["imagenes"]);
@@ -182,7 +182,7 @@
                                     $rutaArchivo = $rutaDestino . $nombreArchivo;
                             
                                     if (move_uploaded_file($archivoTmpName, $rutaArchivo)) {
-                                        $mensaje = $mensaje. "El archivo se subió correctamente a: " . $rutaArchivo;
+                                        //$mensaje = $mensaje. "El archivo se subió correctamente a: " . $rutaArchivo;
 
                                         $consulta = "INSERT INTO imagen(ruta, id_publicacion)
                                         VALUES (?, ?) ";
@@ -190,20 +190,20 @@
                                         $sentencia = $conexion->stmt_init();
                     
                                         if(!$sentencia->prepare($consulta)) {
-                                            $mensaje = $mensaje. " fallo la preparacion de la consulta para 
-                                                        guardar ruta de carpeta de imagenes <br>";
+                                            //$mensaje = $mensaje. " fallo la preparacion de la consulta para 
+                                                      //  guardar ruta de carpeta de imagenes <br>";
                                         } else{
                                             $sentencia->bind_param("ss", $nombreArchivo, $id_publicacion);
                     
                                             $sentencia->execute();
                                             if($sentencia->affected_rows <= 0) {
-                                                $mensaje = $mensaje." error guardando imagen<br>"; 
+                                                $mensaje = $mensaje." No se guardó la imagen<br>"; 
                                             }
                                             $sentencia->close(); 
                                         }
 
                                     } else {
-                                        $mensaje = $mensaje. " Hubo un error al mover el archivo.<br>";
+                                        //$mensaje = $mensaje. " Hubo un error al mover el archivo.<br>";
                                     }
                                 } else {
                                     //echo "Error al subir el archivo. Código de error: " . $errorArchivo;
@@ -219,14 +219,14 @@
                                 $sentencia = $conexion->stmt_init();
 
                                 if(!$sentencia->prepare($consulta)) {
-                                    $mensaje = $mensaje. " fallo la preparacion de la consulta para guardar servicios seleccionados <br>";
+                                   // $mensaje = $mensaje. " fallo la preparacion de la consulta para guardar servicios seleccionados <br>";
                                 } else{
                                     $sentencia->bind_param("ss",$id_publicacion, $id_servicio);
 
                                     $sentencia->execute();
                                     
                                     if($sentencia->affected_rows <= 0) {
-                                        echo"error guardando imagen<br>"; 
+                                        //echo"error guardando imagen<br>"; 
                                     }
                                     $sentencia->close();   
                                 }                 
@@ -242,27 +242,33 @@
                                 $sentencia = $conexion->stmt_init();
 
                                 if(!$sentencia->prepare($consulta)) {
-                                    $mensaje = $mensaje. " fallo la preparacion de la consulta para guardar servicios seleccionados <br>";
+                                    //$mensaje = $mensaje. " fallo la preparacion de la consulta para guardar servicios seleccionados <br>";
                                 } else{
                                     $sentencia->bind_param("ss",$id_publicacion, $id_etiqueta);
 
                                     $sentencia->execute();
                                     
                                     if($sentencia->affected_rows <= 0) {
-                                        echo"error guardando imagen<br>"; 
+                                        //echo"error guardando imagen<br>"; 
                                     }
                                     $sentencia->close();   
                                 }                 
                             }  
                         
-                        }                     
-                    }else{
-                        $mensaje = $mensaje." error guardando datos de la publicación.<br>"; // ver aqi 
+                        }  
+                        
+                        $mensaje = "Publicación creada con éxito!!";
+                        $valido = "false";
+                    } else{
+                        $mensaje = $mensaje." No se guardarón los datos de la publicación.<br>"; // ver aqi
+                        $valido = false; 
                     }
                 }                              
-            } 
+            } else {
+
+            }
         } else {
-           // $mensaje = $mensaje . "no puede realizar la publicación porque ya tiene una ";
+            $mensaje = $mensaje . "No puede realizar la publicación porque ya tiene una, debe verificar la cuenta para obtener más beneficios ";
             $valido = false;
         }
     } else {

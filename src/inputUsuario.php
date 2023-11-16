@@ -19,6 +19,7 @@
 
     } else {
         $mensaje = $mensaje." Debe ingresar clave <br>";
+        $valido = false;
        
     }
 
@@ -37,11 +38,9 @@
 
     } else {
         $mensaje = $mensaje." Debe repetir la misma clave <br>";
+        $valido = false; 
       
-    }
-
-
-    
+    }    
 
     if (isset($_POST['nombre']) && !empty($_POST['nombre'])){
 
@@ -52,6 +51,9 @@
             $mensaje = $mensaje. " El campo Nombre no es válido. Debe contener solo letras y espacios<br>";
             $valido = false;
         }                     
+    } else {
+        $mensaje = $mensaje. " Ingrese Nombre.<br>";
+        $valido = false;
     }
 
     if (isset($_POST['apellido']) && !empty($_POST['apellido'])){
@@ -64,6 +66,9 @@
             $valido = false;
         }
 
+    } else {
+        $mensaje = $mensaje. " Ingrese Apellido. <br>";
+        $valido = false;
     }
 
     if (isset($_POST['fechaNacimiento']) && !empty($_POST['fechaNacimiento'])){
@@ -84,45 +89,44 @@
             $fechaFormateada = $fechaNacimiento->format('Y-m-d');
         }                     
 
+    } else {
+        $mensaje = $mensaje. " Ingrese Fecha de Nacimiento<br>";
+        $valido = false;
     }
 
-    if (isset($_POST['fechaN']) && !empty($_POST['fechaN'])){
-
-        $fechaActual = new DateTime();
-        $fechaNacimiento = $_POST['fechaN'];                    
-        $fechaNacimiento = new DateTime($fechaNacimiento);
-        $edadMinima = 18; // Edad mínima requerida
-        $diferencia = $fechaNacimiento->diff($fechaActual);
-
-        if ($fechaNacimiento > $fechaActual) {
-            $mensaje = $mensaje." La fecha ingresada no puede ser superior a la fecha actual. <br>";
-            $valido = false;
-        } elseif ($diferencia->y < $edadMinima) {
-            $mensaje = $mensaje." Debes tener al menos 18 años para registrarte.<br>";
-            $valido = false;
-        } else  {               
-            $fechaFormateada = $fechaNacimiento->format('Y-m-d');
-        }                     
-
-    }
 
     if (!isset($_POST['codPais'])){
 
         $valido = false;
         $mensaje = $mensaje." Debe seleccionar el codigo de pa&iacute;s.<br>";
 
-    }
+    } 
+
     if (!isset($_POST['telefono']) || empty($_POST['telefono'])){
 
         $valido = false;
         $mensaje = $mensaje." Debe ingresar un n&uacute;mero de tel&eacute;fono valido.<br>";
 
+    } else {
+        $patron = '/^[1-9]\d{9}$/';
+
+        if (!preg_match($patron, $_POST['telefono'])) {
+            $mensaje = $mensaje. "El número de teléfono no es válido.";
+            $valido = false;
+        }
     }
     if (!isset($_POST['dni']) || empty($_POST['dni'])){
 
         $valido = false;
         $mensaje = $mensaje." Debe ingresar un dni valido.<br>";
 
+    } else {
+        $patron = '/^[1-9]\d{4-7}$/';
+
+        if (!preg_match($patron, $_POST['dni'])) {
+            $mensaje = $mensaje. "El número de dni no es válido.";
+            $valido = false;
+        }
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -87,7 +87,7 @@
         if($puedePublicar){
 
 
-            if (isset($_POST['enviar'])){
+            if ($_SERVER['REQUEST_METHOD'] === 'POST'){
 
 
                 if (isset($_POST['titulo']) && empty($_POST['titulo'])){
@@ -136,7 +136,7 @@
                 
             }
 
-            if (isset($_POST['enviar']) && $valido){
+            if ($_SERVER['REQUEST_METHOD'] === 'POST' && $valido){
                 
                 $consulta = "INSERT INTO  publicacion (titulo, descripcion, ubicacion, costo, 
                 cupo, tiempo_minimo, tiempo_maximo, fecha_inicio_publicacion, fecha_fin_publicacion, id_usuario, estado)
@@ -264,8 +264,6 @@
                         $valido = false; 
                     }
                 }                              
-            } else {
-
             }
         } else {
             $mensaje = $mensaje . "No puede realizar la publicación porque ya tiene una, debe verificar la cuenta para obtener más beneficios ";
@@ -289,7 +287,10 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="stylesheet" href="../static/css/bootstrap-icons.css">
         <link href="../static/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">        
+        <script src="../static/js/flatpickr.js"></script>
+        <link rel="stylesheet" href="../static/css/flatpickr.min.css">
+        <script src="../static/js/validacionesParaPublicarAlquiler.js"></script>
     </head>
 
     <body class="background2">
@@ -327,20 +328,20 @@
 
                         <div class="col-md-3">
                             <label for="tiempo_minimo" class="form-label">Minimo Estadia </label>
-                            <input type="text" class="form-control" id="tiempo_minimo" name = "tiempo_minimo" min="1" 
-                            maxlength="30" pattern="^[1-9]{1,}" required>
+                            <input type="text" class="form-control" id="tiempo_minimo" name = "tiempo_minimo" 
+                            pattern="^[1-9][0-9]{0,2}$" required>
                         </div>
                         
                         <div class="col-md-3">
                             <label for="tiempo_maxino" class="form-label">M&aacute;ximo Estadia</label>
-                            <input type="text" class="form-control" id="tiempo_maximo" name = "tiempo_maximo" min="1" 
-                            maxlength="30" pattern="^[1-9]{1,}" required>
+                            <input type="text" class="form-control" id="tiempo_maximo" name = "tiempo_maximo"  
+                            pattern="^[1-9][0-9]{0,2}$" required>
                         </div>
 
                         <div class="col-md-3">
                             <label for="cupo" class="form-label">Cupo</label>
-                            <input type="text" class="form-control" id="cupo" name = "cupo" min="1" maxlength="50"
-                            pattern="^[1-9]{1,}" required>
+                            <input type="text" class="form-control" id="cupo" name = "cupo" 
+                            pattern="^[1-9][0-9]{0,2}$" required>
                         </div>
 
                         <div class="col-md-3">
@@ -383,18 +384,18 @@
                     
                         <div class="col-md-4">
                             <label for="formFile" class="form-label">Subir Fotos</label>
-                            <input class="form-control" type="file" id="formFile"  name="imagenes[]" multiple accept="image/*">
+                            <input class="form-control" type="file" id="formFile"  name="imagenes[]" multiple accept="image/*" multiple>
                         </div>
 
                         <div class="col-md-4">
                             <label for="fecha_inicio" class="form-label">Fecha inicio publicaci&oacute;n</label>
-                            <input type="date" class="form-control" id="fecha_inicio" name= "fecha_inicio" 
+                            <input type="text" class="form-control" id="fecha_inicio" name= "fecha_inicio" 
                             min="16" max="150" >
                         </div>
                     
                         <div class="col-md-4">
                             <label for="fecha_fin" class="form-label">Fecha fin publicaci&oacute;n</label>
-                            <input type="date" class="form-control" id="fecha_fin" name= "fecha_fin" 
+                            <input type="text" class="form-control" id="fecha_fin" name= "fecha_fin" 
                             min="16" max="150" >
                         </div>
             
@@ -403,6 +404,9 @@
                         </div>
 
                     </form><br>
+
+                    <div id="liveAlertPlaceholder"></div> 
+
                     <?php if(!$valido){?>
                         <div class="alert alert-primary d-flex align-items-center alert-dismissible" role="alert" 
                         style = "margin-top: 20px; margin-bottom: 5px;" type = "hidedeng">

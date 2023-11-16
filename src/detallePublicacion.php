@@ -230,6 +230,7 @@
             alertPlaceholder = document.getElementById('liveAlertPlaceholder');
             alertPlaceholderPropietario = document.getElementById('liveAlertPlaceholderPropietario');
             alertPlaceholderservicios = document.getElementById('liveAlerServiciosPlaceholderServicios');
+            
             var mensajeJs = "<?php echo $mensajeJs ?>";
             var mensajeAlquiler = "<?php echo $mensajeAlquiler?>";
 

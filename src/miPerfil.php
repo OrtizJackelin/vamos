@@ -14,6 +14,8 @@
     $nombreFoto = "";
     $hash = "";
     $actualizarClave = false;
+    $esVerificado = 0;
+    $fotoEmpty = false;
     
             
     try{
@@ -30,11 +32,114 @@
     //////////////////////////////////Actualizar información de formulario/////////////////////////////////////////////////
     if ($_SERVER['REQUEST_METHOD'] === 'POST'){
 
-        include "../src/inputUsuario.php";
-        $esVerificado = 0;
+        /////////////////////////Validaciones///////////////////////////////////////////////////////////////////////////////
+        if(isset($_POST['clave']) && !empty($_POST['clave'])) {
+    
+            if (isset($_POST['clave'])) {
+    
+                $patron = '/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@#$%^&+=!])(?!.*\s).{8,}$/';
+    
+                if (!preg_match($patron, $_POST['clave'])) {
+    
+                    $mensaje = $mensaje." La contraseña no cumple con los requisitos.<br>";
+                    $valido = false;
+                    
+                }
+              
+            } 
+            
+            if (isset($_POST['repetirClave']) && !empty($_POST['repetirClave'])){
+        
+                if($_POST['clave'] === $_POST['repetirClave']){
+                // Generar un hash seguro de la contraseña
+                    $hash = password_hash($_POST['clave'], PASSWORD_DEFAULT); 
+                    $actualizarClave = true;
+                
+                } else {
+                    $mensaje = $mensaje." Las claves no coinciden <br>";
+                    $valido = false;  
+                    
+                }    
+        
+            } else {
+                $mensaje = $mensaje." Debe ingresar clave <br>";
+                $valido = false;
+            
+            }
+    
+        }     
+        
+    
+        if (isset($_POST['nombre']) && !empty($_POST['nombre'])){
+    
+            $patron = "/^[A-Za-z\s]+$/";
+    
+            // Utiliza la función preg_match para verificar si el valor cumple con el patrón
+            if (!preg_match($patron, $_POST['nombre'])) {
+                $mensaje = $mensaje. " El campo Nombre no es válido. Debe contener solo letras y espacios<br>";
+                $valido = false;
+            }                     
+        }
+    
+        if (isset($_POST['apellido']) && !empty($_POST['apellido'])){
+    
+            $patron = "/^[A-Za-z\s]+$/";
+    
+            // Utiliza la función preg_match para verificar si el valor cumple con el patrón
+            if (!preg_match($patron, $_POST['apellido'])) {
+                $mensaje = $mensaje. " El campo Apellido no es válido. Debe contener solo letras y espacios<br>";
+                $valido = false;
+            }
+    
+        }
+    
+        if (isset($_POST['fechaN']) && !empty($_POST['fechaN'])){
+    
+            $fechaActual = new DateTime();
+            $fechaNacimiento = $_POST['fechaN'];                    
+            $fechaNacimiento = new DateTime($fechaNacimiento);
+            $edadMinima = 18; // Edad mínima requerida
+            $diferencia = $fechaNacimiento->diff($fechaActual);
+    
+            if ($fechaNacimiento > $fechaActual) {
+                $mensaje = $mensaje." La fecha ingresada no puede ser superior a la fecha actual. <br>";
+                $valido = false;
+            } elseif ($diferencia->y < $edadMinima) {
+                $mensaje = $mensaje." Debes tener al menos 18 años para registrarte.<br>";
+                $valido = false;
+            } else  {               
+                $fechaFormateada = $fechaNacimiento->format('Y-m-d');
+            }                     
+    
+        }
+    
+        if (!isset($_POST['codPais'])){
+    
+            $valido = false;
+            $mensaje = $mensaje." Debe seleccionar el codigo de pa&iacute;s.<br>";
+    
+        }
+        if (isset($_POST['telefono']) && !empty($_POST['telefono'])){
+    
+            $patron = '/^[1-9]\d{9}$/';
 
-        $fotoEmpty = false;
-        //var_dump($_POST);
+            if (!preg_match($patron, $_POST['telefono'])) {
+                $mensaje = $mensaje . "El número de teléfono no es válido.";
+                $valido = false;
+            }
+                
+        }
+        if (isset($_POST['dni']) && !empty($_POST['dni'])){
+    
+            $patron = '/^[1-9]\d{4-7}$/';
+
+            if (!preg_match($patron, $_POST['dni'])) {
+                $mensaje = $mensaje. "El número de dni no es válido.";
+                $valido = false;
+            }
+    
+        }      
+       
         extract($_POST);
 
         if (file_exists($directorioDestino) && ($_FILES['foto']['size']>0) ) {
@@ -69,7 +174,7 @@
                                 $mensaje = $mensaje . "fallo la preparacion de la consulta <br>";
                                 $valido = false;
                             } else{
-                                $sentencia->bind_param("ss", $nombreFoto, $_SESSION['id']);        
+                                $sentencia->bind_param("ss", substr($nombreFoto, 0, 100), $_SESSION['id']);        
                                 $sentencia->execute();
                                 if($sentencia->affected_rows <= 0) {
                                     $mensaje = $mensaje . "error guardando foto<br>"; 
@@ -94,12 +199,11 @@
                 $mensaje = $mensaje . "Error al subir el archivo. Código de error: " . $errorArchivo . "<br>";
                 $valido = false;
             }
-        }  else {
+        } 
 
-        }            
-        
+        /////////////////////////////////////////////FIN VALIDACIONES////////////////////////////////////////////////////////////
         if($valido){
-
+            /////////////////////////////////////Actualizar Estado De La Cuenta (Pierde La Certificaión/////////////////////////
             $consulta = "UPDATE verificacion_cuenta 
             SET estado = 2
             WHERE id = ( SELECT id
@@ -126,7 +230,8 @@
                 }
                 $sentencia->close(); 
             }
-
+            ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            ////////////////////////////////////Actualizar Datos En BD/////////////////////////////////////////////////////////
             $consulta = "UPDATE  user 
                         SET nombre = ?, apellido = ?, dni = ?, sexo = ?, fecha_nacimiento = ?, 
                             telefono = ?, cod_pais= ?, bio = ?, es_verificado = ?
@@ -138,8 +243,8 @@
                 $mensaje = $mensaje . "fallo la preparacion de la consulta general de los dato" . $conexion->error . " <br>";
                 $valido = false;
             } else{
-                $sentencia->bind_param("ssssssssss", $nombre, $apellido, $dni, $sexo, $fechaN,
-                                        $telefono, $codPais, $bio, $esVerificado,  $_SESSION['id']);        
+                $sentencia->bind_param("ssssssssss", substr($nombre, 0, 50), substr($apellido, 0, 50), $dni, $sexo, $telefono, 
+                                        $codPais, $bio, $esVerificado,  $_SESSION['id']);         
                 
                 if (!$sentencia->execute()) {
                     $mensaje = $mensaje . "Error ejecutando la consulta de los datos: " . $sentencia->error . "<br>";
@@ -156,7 +261,7 @@
             }
         }
 
-        ///////////////////////////////////Actualizando clave//////////////////
+        ////////////////////////////////////////////Actualizando clave//////////////////////////////////////////////////////////
 
         if ($valido && $actualizarClave) {
         
@@ -187,7 +292,7 @@
             }
         }
             
-        //////////////////////Conculto para eliminar todos los check existentes
+        //////////////////////Conculto para eliminar todos los check existentes///////////////////////////////////////////////
         $consulta = "DELETE  FROM interes_user
                     WHERE id_usuario = ?";
 
@@ -201,7 +306,7 @@
             $sentencia->close();   
         }  
         
-        ///////////////////////Insertamos las nuevas opciones seleccionadas//////////////
+        ////////////////////////////////Insertamos las nuevas opciones seleccionadas//////////////////////////////////////////
         if(isset($interes)){
             foreach($interes as $id_interes){
                 //echo $_SESSION['id']. "y " .$id_interes;
@@ -233,7 +338,7 @@
     }
 
 
-        /////////////////////////Consultar para traer los códigos de países///////////////////////////////////
+    //////////////////////////////////Consultar para traer los códigos de países/////////////////////////////////////////////
     $consulta = "SELECT *
                 FROM codigo_pais";
     $sentencia_codigo = $conexion->stmt_init();
@@ -247,9 +352,9 @@
         $resultado_codigo = $sentencia_codigo->get_result();   
         $sentencia_codigo->close();               
     }
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
-    //////////////////Consultar Para traer los valores que se muestran en el fomulario////////////////////
+    //////////////////////////////Consultar Para traer los valores que se muestran en el fomulario///////////////////////////////
     $consulta = "SELECT email, clave, nombre, apellido, dni, fecha_nacimiento, telefono, sexo, bio, foto, es_verificado, cod_pais
                 FROM user 
                 WHERE id = ? ";         

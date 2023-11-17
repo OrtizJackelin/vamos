@@ -258,7 +258,7 @@
                         }  
                         
                         $mensaje = "Publicación creada con éxito!!";
-                        $valido = "false";
+                        $valido = true;
                     } else{
                         $mensaje = $mensaje." No se guardarón los datos de la publicación.<br>"; // ver aqi
                         $valido = false; 
@@ -291,6 +291,9 @@
         <script src="../static/js/flatpickr.js"></script>
         <link rel="stylesheet" href="../static/css/flatpickr.min.css">
         <script src="../static/js/validacionesParaPublicarAlquiler.js"></script>
+        <script>
+            var mensaje = "<?php echo $mensaje?>";
+        </script>
     </head>
 
     <body class="background2">
@@ -299,6 +302,7 @@
         </header>
 
         <!--FORMULARIO-->
+        
         <?php if($puedePublicar) { ?>
             <section>            
                 <div class="container w-85" >
@@ -311,42 +315,42 @@
 
                         <div class="col-md-12">
                             <label for="titulo" class="form-label">T&iacute;tulo</label>
-                            <input type="text" class="form-control" id="titulo" name = "titulo" 
+                            <input type="text" class="form-control entradas" id="titulo" name = "titulo" 
                             pattern="[A-Za-z0-9 ]{2,90}" required>
                         </div>
 
                         <div class="col-md-12">
                             <label for="descripcion" class="form-label">Descripci&oacute;n</label>
-                            <textarea class="form-control" id="descripcion" name = "descripcion" rows = "4" required></textarea>
+                            <textarea class="form-control entradas" id="descripcion"  name = "descripcion" rows = "4" required></textarea>
                         </div>
 
                         <div class="col-md-12">
                             <label for="ubicacion" class="form-label">Ubicaci&oacute;n</label>
-                            <textarea class="form-control" id="ubicacion" name = "ubicacion"  rows="3" 
+                            <textarea class="form-control entradas" id="ubicacion" name = "ubicacion"  rows="3"
                             pattern="^[A-Za-z0-9 .#' /-_]{2,300}" required></textarea>
                         </div>
 
                         <div class="col-md-3">
                             <label for="tiempo_minimo" class="form-label">Minimo Estadia </label>
-                            <input type="text" class="form-control" id="tiempo_minimo" name = "tiempo_minimo" 
+                            <input type="text" class="form-control entradas" id="tiempo_minimo" name = "tiempo_minimo" 
                             pattern="^[1-9][0-9]{0,2}$" required>
                         </div>
                         
                         <div class="col-md-3">
                             <label for="tiempo_maxino" class="form-label">M&aacute;ximo Estadia</label>
-                            <input type="text" class="form-control" id="tiempo_maximo" name = "tiempo_maximo"  
+                            <input type="text" class="form-control entradas" id="tiempo_maximo" name = "tiempo_maximo"  
                             pattern="^[1-9][0-9]{0,2}$" required>
                         </div>
 
                         <div class="col-md-3">
                             <label for="cupo" class="form-label">Cupo</label>
-                            <input type="text" class="form-control" id="cupo" name = "cupo" 
+                            <input type="text" class="form-control entradas" id="cupo" name = "cupo" 
                             pattern="^[1-9][0-9]{0,2}$" required>
                         </div>
 
                         <div class="col-md-3">
                             <label for="costo" class="form-label">Costo</label>
-                            <input type="text" class="form-control" id="costo" name = "costo" 
+                            <input type="text" class="form-control entradas" id="costo" name = "costo" 
                             pattern="^[0-9]{5,}"required>
                         </div>     
                         
@@ -384,18 +388,18 @@
                     
                         <div class="col-md-4">
                             <label for="formFile" class="form-label">Subir Fotos</label>
-                            <input class="form-control" type="file" id="formFile"  name="imagenes[]" multiple accept="image/*" multiple>
+                            <input class="form-control entradas" type="file" id="formFile"  name="imagenes[]" multiple accept="image/*" multiple>
                         </div>
 
                         <div class="col-md-4">
                             <label for="fecha_inicio" class="form-label">Fecha inicio publicaci&oacute;n</label>
-                            <input type="text" class="form-control" id="fecha_inicio" name= "fecha_inicio" 
+                            <input type="text" class="form-control entradas" id="fecha_inicio" name= "fecha_inicio" 
                             min="16" max="150" >
                         </div>
                     
                         <div class="col-md-4">
                             <label for="fecha_fin" class="form-label">Fecha fin publicaci&oacute;n</label>
-                            <input type="text" class="form-control" id="fecha_fin" name= "fecha_fin" 
+                            <input type="text" class="form-control entradas" id="fecha_fin" name= "fecha_fin" 
                             min="16" max="150" >
                         </div>
             
@@ -404,9 +408,7 @@
                         </div>
 
                     </form><br>
-
                     <div id="liveAlertPlaceholder"></div> 
-
                     <?php if(!$valido){?>
                         <div class="alert alert-primary d-flex align-items-center alert-dismissible" role="alert" 
                         style = "margin-top: 20px; margin-bottom: 5px;" type = "hidedeng">
@@ -435,6 +437,7 @@
                 </div>
             </section>
         <?php } ?>
+        
 
         <!--FOOTER-->
         <footer>

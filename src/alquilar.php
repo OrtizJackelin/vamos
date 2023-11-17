@@ -25,7 +25,7 @@
 
             $sentencia = $conexion->stmt_init();
             if(!$sentencia->prepare($consulta)){
-                echo "error preparando la consulta para verificar fecha ";
+                //echo "error preparando la consulta para verificar fecha ";
             } else{
                 $sentencia ->bind_param("s", $idUsuario);
                 $sentencia->execute();

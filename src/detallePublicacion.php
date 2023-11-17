@@ -645,7 +645,7 @@
                     
                     </div> 
                     <div id="liveAlertPlaceholder"></div>
-                    <div id="liveAlertPlaceholderPropietario" style = "height: 5px ;"></div>
+                    <div id="liveAlertPlaceholderPropietario"></div>
                 </div>
             </div>             
         
